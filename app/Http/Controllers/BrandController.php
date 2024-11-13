@@ -51,11 +51,10 @@ class BrandController extends Controller
 
         // Prepare the brand data in the required format
         $brandData = [
-            'brand' => [
                 'brand_id' => $brand->brand_id,
                 'name' => $brand->name,
                 'description' => $brand->description,
-                'image' => asset('storage/images/' . $brand->image),
+                'image' =>  $brand->image,
                 'total_products' => $brand->products->count(),
                 'created_at' => $brand->created_at,
                 'updated_at' => $brand->updated_at,
@@ -78,10 +77,9 @@ class BrandController extends Controller
                         'product_type' => $product->product_type,
                         'main_ingredient' => $product->main_ingredient,
                         'target_skin_type' => $product->target_skin_type,
-                        'image' => asset('storage/images/' . $product->image),
+                        'image' =>  $product->image,
                     ];
                 })
-            ]
         ];
 
         return response()->json($brandData, 200);

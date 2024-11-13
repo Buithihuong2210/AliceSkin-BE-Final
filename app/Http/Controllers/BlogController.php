@@ -7,6 +7,7 @@ use App\Models\BlogLike;
 use App\Models\Hashtag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -18,6 +19,16 @@ class BlogController extends Controller
         try {
             // Retrieve blogs with related hashtags and user information
             $blogs = Blog::with(['hashtags', 'user'])->get();
+
+            // Count the number of 'published' and 'draft' blogs
+            $publishedCount = Blog::where('status', 'published')->count();
+            $draftCount = Blog::where('status', 'draft')->count();
+
+            // Create the status counts object
+            $statusCounts = [
+                'draft' => $draftCount,
+                'published' => $publishedCount,
+            ];
 
             // Map the blogs to include hashtags and user information
             $blogsWithHashtagsAndUser = $blogs->map(function ($blog) {
@@ -43,8 +54,11 @@ class BlogController extends Controller
                 ];
             });
 
-            // Return the blogs with user and hashtags in the response
-            return response()->json($blogsWithHashtagsAndUser, 200);
+            // Return the blogs with user and hashtags, along with status counts
+            return response()->json([
+                'blogs' => $blogsWithHashtagsAndUser,
+                'status_counts' => $statusCounts, // Return status counts
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'An error occurred while retrieving blogs',
@@ -52,7 +66,6 @@ class BlogController extends Controller
             ], 500);
         }
     }
-
     // Create a new blog
     public function store(Request $request)
     {
@@ -141,13 +154,23 @@ class BlogController extends Controller
     public function show($blog_id)
     {
         try {
-            // Retrieve the blog using the provided blog_id and load the related user and hashtags
+            // Lấy blog với thông tin người dùng và hashtag
             $blog = Blog::with('user', 'hashtags')->findOrFail($blog_id);
 
-            // Get hashtags associated with the blog
+            // Lấy người dùng hiện tại
+            $user = Auth::user();
+
+            // Kiểm tra nếu người dùng hiện tại đã like blog này hay chưa
+            $liked_by_user = false;
+            if ($user) {
+                // Kiểm tra xem người dùng hiện tại đã like blog này chưa
+                $liked_by_user = BlogLike::where('blog_id', $blog_id)->where('user_id', $user->id)->exists();
+            }
+
+            // Lấy danh sách hashtags liên kết với blog
             $hashtags = $blog->hashtags->pluck('name');
 
-            // Return the blog details including user information, without the outer "blog" key
+            // Trả về thông tin blog, thêm thuộc tính liked_by_user
             return response()->json([
                 'blog_id' => $blog->blog_id,
                 'title' => $blog->title,
@@ -158,6 +181,7 @@ class BlogController extends Controller
                 'created_at' => $blog->created_at,
                 'updated_at' => $blog->updated_at,
                 'hashtags' => $hashtags,
+                'liked_by_user' => $liked_by_user, // Thêm thuộc tính liked_by_user
                 'user' => [
                     'id' => $blog->user->id,
                     'name' => $blog->user->name,
@@ -175,7 +199,6 @@ class BlogController extends Controller
             ], 404);
         }
     }
-
     public function showUserBlogs(Request $request)
     {
         try {
@@ -527,7 +550,6 @@ class BlogController extends Controller
             ], 500);
         }
     }
-
 
     // Delete a blog
     public function destroy($blog_id)

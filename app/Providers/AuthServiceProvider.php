@@ -27,7 +27,7 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         // Đăng ký Gate kiểm tra quyền admin
-        Gate::define('view products of a brand', function (User $user) {
+        Gate::define('change blog status', function (User $user) {
             // Kiểm tra xem người dùng có phải là admin không
             return $user->hasRole('admin');
         });

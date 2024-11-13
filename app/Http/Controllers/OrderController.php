@@ -19,6 +19,8 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         try {
+            DB::beginTransaction();
+
             // Validate the incoming request
             $request->validate([
                 'shipping_id' => 'required|exists:shippings,id',
@@ -78,6 +80,7 @@ class OrderController extends Controller
                 $paymentStatus = 'Waiting for Payment'; // Đợi thanh toán cho các phương thức khác như VNPay
             }
 
+
             // Tạo đơn hàng
             $order = Order::create([
                 'user_id' => $userId,
@@ -106,13 +109,28 @@ class OrderController extends Controller
 
             // Lưu các mục đơn hàng vào bảng order_items
             foreach ($cart->items as $cartItem) {
+                $product = $cartItem->product;
+                if ($product->quantity < $cartItem->quantity) {
+                    DB::rollBack();
+                    return response()->json(['error' => "Không đủ tồn kho cho sản phẩm: {$product->name}"], 400);
+                }
+
                 OrderItem::create([
                     'order_id' => $order->order_id,
-                    'product_id' => $cartItem->product->product_id,
+                    'product_id' => $product->product_id,
                     'quantity' => $cartItem->quantity,
                     'price' => floatval($cartItem->price),
                 ]);
+
+                echo "Số lượng sản phẩm trước khi lưu: {$product->quantity}\n";
+
+                $product->quantity -= $cartItem->quantity;
+                $product->save();
+                echo "Số lượng tồn kho sau khi lưu: {$product->quantity}\n";
+
             }
+
+            DB::commit();
 
             return response()->json([
                 'message' => 'Order created successfully!',
@@ -144,8 +162,10 @@ class OrderController extends Controller
             ], 201);
 
         } catch (QueryException $e) {
+            DB::rollBack();
             return response()->json(['error' => 'Database error: ' . $e->getMessage()], 500);
         } catch (Exception $e) {
+            DB::rollBack();
             return response()->json(['error' => 'An unexpected error occurred: ' . $e->getMessage()], 500);
         }
     }
@@ -166,9 +186,9 @@ class OrderController extends Controller
     public function showAll()
     {
         try {
-            // Fetch all orders with related cart items and products
-            $orders = Order::with('cart.items.product')->get();
-    
+            // Fetch all orders with related order items and products
+            $orders = Order::with('orderItems.product', 'user')->get();
+
             // Return only relevant fields in the JSON response
             return response()->json($orders->map(function ($order) {
                 return [
@@ -187,15 +207,14 @@ class OrderController extends Controller
                     'status' => $order->status,
                     'created_at' => $order->created_at,
                     'updated_at' => $order->updated_at,
-                    'cart_items' => $order->cart ? $order->cart->items->map(function ($item) {
+                    'order_items' => $order->orderItems->map(function ($item) {
                         return [
-                            'product_id' => $item->product->product_id ?? null, // Ensure product_id is fetched
+                            'product_id' => $item->product->product_id ?? null,
                             'name' => $item->product->name ?? 'N/A',
-                            'price' => number_format($item->product->discounted_price, 2),
-                            'price_of_cart_item' => number_format($item->price, 2),
-                            'quantity' => $item->quantity, // Get quantity
+                            'price' => number_format($item->price, 2),
+                            'quantity' => $item->quantity,
                         ];
-                    }) : [], // Return an empty array if no cart exists
+                    }),
                 ];
             }));
         } catch (QueryException $e) {
@@ -477,6 +496,9 @@ class OrderController extends Controller
             $order = Order::with('cart.items.product', 'voucher', 'shipping') // Tải các sản phẩm trong giỏ hàng, voucher, và shipping
             ->where('order_id', $orderId)
                 ->firstOrFail(); // Trả về lỗi 404 nếu không tìm thấy đơn hàng
+
+            // Kiểm tra dữ liệu của voucher
+//            dd($order->voucher); // Dừng và kiểm tra dữ liệu của voucher
 
             // Trả về thông tin đơn hàng cùng với các sản phẩm trong giỏ hàng, voucher, và shipping
             return response()->json([

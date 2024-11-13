@@ -16,7 +16,7 @@ class QuestionController extends Controller
             // Validate the incoming request
             $validator = Validator::make($request->all(), [
                 'question_text' => 'required|string|max:255',
-                'question_type' => 'required|string|in:multiple_choice,text',
+                'question_type' => 'required|string|in:multiple_choice',
                 'options' => 'required_if:type,multiple_choice|array|min:2',
                 'options.*' => 'required_if:type,multiple_choice|string',
                 'category' => 'required|string|in:Interest,Goal,Factor',

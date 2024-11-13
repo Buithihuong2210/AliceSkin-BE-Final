@@ -8,6 +8,8 @@ use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeEmail;  // Assuming you have a WelcomeEmail Mailable class
 
 class AuthController extends Controller
 {
@@ -16,7 +18,7 @@ class AuthController extends Controller
         try {
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
+                'email' => 'required|email:rfc,dns|max:255|unique:users',
                 'password' => 'required|string|min:8',
                 'phone' => 'required|string|max:15', // Adjust max length as needed
                 'dob' => 'required|date',
@@ -39,6 +41,9 @@ class AuthController extends Controller
             'gender' => $validatedData['gender'],
             'address' => $validatedData['address'],
         ]);
+
+        // Send welcome email to the user
+        Mail::to($user->email)->send(new WelcomeEmail($user));
 
         // Generate a token for the user
         $token = $user->createToken('auth_token')->plainTextToken;
