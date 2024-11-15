@@ -177,6 +177,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/', [BlogController::class, 'showAll']);
         Route::put('/{blog}', [BlogController::class, 'updateUser']);
         Route::get('/{blog}', [BlogController::class, 'show']);
+        Route::delete('/delete/{blog_id}', [BlogController::class, 'deleteUser']);
     });
 
     Route::prefix('blogs/{blog_id}')->group(function () {
@@ -203,6 +204,9 @@ Route::prefix('surveys/{survey_id}/questions')->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('manager')->group(function () {
+
+    Route::delete('/blogs/delete/{blog_id}', [BlogController::class, 'deleteAdmin']);
+
     // Admin routes for user management
     Route::get('/users', [UserController::class, 'index']);
     Route::put('/user/update/{id}', [UserController::class, 'update']);
@@ -303,6 +307,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('manager')->group(func
         Route::put('/{blog_id}', [BlogController::class, 'updateAdmin']);
         Route::put('/changestatus/{blog_id}', [BlogController::class, 'changeStatus']);
         Route::get('/{blog}', [BlogController::class, 'show']);
+
     });
 
     Route::get('/payments', [VNPayController::class, 'getAllPayments']);

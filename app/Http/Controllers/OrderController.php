@@ -122,11 +122,11 @@ class OrderController extends Controller
                     'price' => floatval($cartItem->price),
                 ]);
 
-                echo "Số lượng sản phẩm trước khi lưu: {$product->quantity}\n";
+//                echo "Số lượng sản phẩm trước khi lưu: {$product->quantity}\n";
 
                 $product->quantity -= $cartItem->quantity;
                 $product->save();
-                echo "Số lượng tồn kho sau khi lưu: {$product->quantity}\n";
+//                echo "Số lượng tồn kho sau khi lưu: {$product->quantity}\n";
 
             }
 
