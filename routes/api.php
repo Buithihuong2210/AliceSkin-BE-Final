@@ -205,8 +205,6 @@ Route::prefix('surveys/{survey_id}/questions')->group(function () {
 
 Route::middleware(['auth:sanctum', 'role:admin'])->prefix('manager')->group(function () {
 
-    Route::delete('/blogs/{blog_id}', [BlogController::class, 'destroy']);
-
     // Admin routes for user management
     Route::get('/users', [UserController::class, 'index']);
     Route::put('/user/update/{id}', [UserController::class, 'update']);
@@ -246,12 +244,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('manager')->group(func
     Route::put('/update-status/{order_id}' ,[OrderController::class, 'updateOrderStatus']);
     Route::get('/orders/canceled', [OrderController::class, 'getCanceledOrders']);
 
-    Route::prefix('blogs')->group(function () {
-        Route::delete('/{blog}', [BlogController::class, 'destroy']);
-//        Route::post('/{blog_id}/like', [BlogController::class, 'likeBlog']);
-        Route::put('/{blog_id}/likes', [BlogController::class, 'setLikes']); // Đường dẫn để cập nhật số lượt like
 
-    });
 
     Route::prefix('shippings')->group(function () {
         Route::get('/', [ShippingController::class, 'index']); // List all shipping records
@@ -307,6 +300,11 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('manager')->group(func
         Route::put('/{blog_id}', [BlogController::class, 'updateAdmin']);
         Route::put('/changestatus/{blog_id}', [BlogController::class, 'changeStatus']);
         Route::get('/{blog}', [BlogController::class, 'show']);
+    });
+
+    Route::prefix('blogs')->group(function () {
+        Route::delete('/{blog}', [BlogController::class, 'destroy']);
+        Route::put('/{blog_id}/likes', [BlogController::class, 'setLikes']);
     });
 
     Route::get('/payments', [VNPayController::class, 'getAllPayments']);
