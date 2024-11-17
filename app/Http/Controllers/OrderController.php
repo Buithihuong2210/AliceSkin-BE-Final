@@ -122,11 +122,11 @@ class OrderController extends Controller
                     'price' => floatval($cartItem->price),
                 ]);
 
-                // echo "Số lượng sản phẩm trước khi lưu: {$product->quantity}\n";
+//                echo "Số lượng sản phẩm trước khi lưu: {$product->quantity}\n";
 
-                // $product->quantity -= $cartItem->quantity;
-                // $product->save();
-                // echo "Số lượng tồn kho sau khi lưu: {$product->quantity}\n";
+                $product->quantity -= $cartItem->quantity;
+                $product->save();
+//                echo "Số lượng tồn kho sau khi lưu: {$product->quantity}\n";
 
             }
 
@@ -223,7 +223,6 @@ class OrderController extends Controller
             return response()->json(['error' => 'An unexpected error occurred: ' . $e->getMessage()], 500);
         }
     }
-    
 
     public function updateOrderStatus(Request $request, $order_id)
     {
@@ -437,13 +436,6 @@ class OrderController extends Controller
     }
     public function checkVnPayPaymentStatus($order_id)
     {
-        // Giả định bạn gọi API VNPay để kiểm tra trạng thái thanh toán
-        // Ở đây bạn có thể gọi API của VNPay để lấy trạng thái thực tế
-        // hoặc giả định trả về kết quả cho mục đích thử nghiệm.
-
-        // Giả sử trạng thái thanh toán từ VNPay
-        // Trả về 'Success' hoặc 'Failed'
-        // Bạn có thể thay đổi logic này theo nhu cầu thực tế
         $status = 'Success'; // Hoặc 'Failed'
 
         return $status;
@@ -453,7 +445,7 @@ class OrderController extends Controller
     {
         try {
             // Lấy tất cả đơn hàng của người dùng theo user_id
-            $orders = Order::with('cart.items.product')
+            $orders = Order::with('orderItems.product')
                 ->where('user_id', $userId)
                 ->get();
 
@@ -470,7 +462,7 @@ class OrderController extends Controller
                     'total_amount' => number_format($order->total_amount, 2),
                     'shipping_address' => $order->shipping_address,
                     'status' => $order->status,
-                    'cart_items' => $order->cart->items->map(function ($item) {
+                    'cart_items' => $order->orderItems->map(function ($item) {
                         return [
                             'product_id' => $item->product->product_id ?? null,
                             'product_name' => $item->product->name ?? 'N/A',
@@ -493,17 +485,23 @@ class OrderController extends Controller
     {
         try {
             // Lấy đơn hàng theo order_id (nếu không tìm thấy sẽ trả về lỗi 404)
-            $order = Order::with('cart.items.product', 'voucher', 'shipping') // Tải các sản phẩm trong giỏ hàng, voucher, và shipping
-            ->where('order_id', $orderId)
-                ->firstOrFail(); // Trả về lỗi 404 nếu không tìm thấy đơn hàng
+            $order = Order::with('orderItems.product', 'voucher', 'shipping')
+                ->where('order_id', $orderId)
+                ->firstOrFail(); // Throw 404 error if order not found
 
             // Kiểm tra dữ liệu của voucher
 //            dd($order->voucher); // Dừng và kiểm tra dữ liệu của voucher
+            // Convert order_date to Carbon instance if it's not already
+            $orderDate = Carbon::parse($order->order_date);
+
+            // Calculate expected delivery date (e.g., 5 days from order date)
+            $expectedDeliveryDate = $orderDate->addDays(5)->format('Y-m-d');
 
             // Trả về thông tin đơn hàng cùng với các sản phẩm trong giỏ hàng, voucher, và shipping
             return response()->json([
                 'order_id' => $order->order_id,
-                'order_date' => Carbon::parse($order->order_date)->format('Y-m-d'),
+                'order_date' => $orderDate->toIso8601String(),
+                'expected_delivery_date' => $expectedDeliveryDate,
                 'total_amount' => number_format($order->total_amount, 2),
                 'shipping_address' => $order->shipping_address,
                 'status' => $order->status,
@@ -517,7 +515,7 @@ class OrderController extends Controller
                     'shipping_amount' => number_format($order->shipping->shipping_amount, 2),
                     'method' => $order->shipping->method,
                 ] : null, // If shipping exists, include it
-                'cart_items' => $order->cart->items->map(function ($item) {
+                'cart_items' => $order->orderItems->map(function ($item) {
                     return [
                         'product_id' => $item->product->product_id ?? null,
                         'product_name' => $item->product->name ?? 'N/A',
