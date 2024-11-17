@@ -551,21 +551,80 @@ class BlogController extends Controller
         }
     }
 
-    // Delete a blog
+//     Delete a blog
     public function destroy($blog_id)
     {
         try {
+            // Lấy thông tin blog dựa trên ID
             $blog = Blog::findOrFail($blog_id);
+
+            // Xóa blog
             $blog->delete();
 
-            return response()->json(null, 204);
+            return response()->json([
+                'message' => 'Blog deleted successfully',
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Blog not found or could not be deleted',
+                'message' => 'An error occurred while deleting the blog',
                 'error' => $e->getMessage(),
-            ], 404);
+            ], 500);
         }
     }
+
+//    public function deleteUser($blog_id)
+//    {
+//        try {
+//            // Lấy thông tin blog dựa trên ID
+//            $blog = Blog::findOrFail($blog_id);
+//
+//            // Kiểm tra quyền: chỉ cho phép xóa nếu user là chủ sở hữu và trạng thái là "draft"
+//            if (auth()->user()->id !== $blog->user_id || $blog->status !== 'draft') {
+//                return response()->json([
+//                    'message' => 'Unauthorized or blog is not in draft status',
+//                ], 403);
+//            }
+//
+//            // Xóa blog
+//            $blog->delete();
+//
+//            return response()->json([
+//                'message' => 'Blog deleted successfully',
+//            ], 200);
+//        } catch (\Exception $e) {
+//            return response()->json([
+//                'message' => 'An error occurred while deleting the blog',
+//                'error' => $e->getMessage(),
+//            ], 500);
+//        }
+//    }
+
+//    public function deleteAdmin($blog_id)
+//    {
+//        try {
+//            // Kiểm tra xem user hiện tại có phải là admin không
+//            if (auth()->user()->role !== 'admin') {
+//                return response()->json([
+//                    'message' => 'Unauthorized. Only admins can perform this action.',
+//                ], 403);
+//            }
+//
+//            // Lấy thông tin blog dựa trên ID
+//            $blog = Blog::findOrFail($blog_id);
+//
+//            // Xóa blog
+//            $blog->delete();
+//
+//            return response()->json([
+//                'message' => 'Blog deleted successfully',
+//            ], 200);
+//        } catch (\Exception $e) {
+//            return response()->json([
+//                'message' => 'An error occurred while deleting the blog',
+//                'error' => $e->getMessage(),
+//            ], 500);
+//        }
+//    }
 
 // List all blogs with status 'draft'
     public function listDraftBlogs()
