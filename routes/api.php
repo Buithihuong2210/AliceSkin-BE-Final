@@ -303,7 +303,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('manager')->group(func
     });
 
     Route::prefix('blogs')->group(function () {
-        Route::delete('/{blog}', [BlogController::class, 'destroy']);
+        Route::delete('/{blog_id}', [BlogController::class, 'destroy']);
         Route::put('/{blog_id}/likes', [BlogController::class, 'setLikes']);
     });
 
