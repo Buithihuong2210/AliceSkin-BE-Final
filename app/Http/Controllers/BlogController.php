@@ -555,15 +555,20 @@ class BlogController extends Controller
     public function destroy($blog_id)
     {
         try {
+            // Lấy thông tin blog dựa trên ID
             $blog = Blog::findOrFail($blog_id);
+
+            // Xóa blog
             $blog->delete();
 
-            return response()->json(null, 204);
+            return response()->json([
+                'message' => 'Blog deleted successfully',
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Blog not found or could not be deleted',
+                'message' => 'An error occurred while deleting the blog',
                 'error' => $e->getMessage(),
-            ], 404);
+            ], 500);
         }
     }
 
