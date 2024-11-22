@@ -2,49 +2,35 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Role;
-use App\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 
 class RolePermissionSeeder extends Seeder
 {
     public function run()
     {
-        // Define roles
-        $roles = [
-            'admin',
-            'staff',
-            'user',
-        ];
-
-        // Define permissions, including 'change blog status'
+        // Tạo các quyền
         $permissions = [
-            'view users', 'edit users', 'delete users', 'assign roles', 'view user',
-            'create brands', 'edit brands', 'delete brands', 'view brands', 'view brand',
-            'change blog status', // New permission
-            // Additional permissions here
+            'manage_surveys', // Quản lý khảo sát
+            'manage_questions', // Quản lý câu hỏi
+            'view_responses', // Xem câu trả lời
+            'manage_blogs', // Quản lý blog
+            'confirm_delivery' // Xác nhận đơn hàng
         ];
 
-        // Create permissions in Permission table
-        foreach ($permissions as $permissionName) {
-            Permission::firstOrCreate([
-                'permission' => $permissionName,
-                'guard_name' => 'web',
-            ]);
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Fetch roles
-        $adminRole = Role::where('role_name', 'admin')->first();
-        $staffRole = Role::where('role_name', 'staff')->first();
+        // Tạo role admin
+        $admin = Role::firstOrCreate(['name' => 'admin']);
+        $admin->givePermissionTo(Permission::all()); // Admin có tất cả quyền
 
-        // Assign 'change blog status' permission to admin and staff
-        $changeBlogStatusPermission = Permission::where('permission', 'change blog status')->first();
-
-        if ($adminRole && $changeBlogStatusPermission) {
-            $adminRole->permissions()->syncWithoutDetaching([$changeBlogStatusPermission->id]);
-        }
-
-        if ($staffRole && $changeBlogStatusPermission) {
-            $staffRole->permissions()->syncWithoutDetaching([$changeBlogStatusPermission->id]);
-        }
+        // Tạo role staff
+        $staff = Role::firstOrCreate(['name' => 'staff']);
+        $staff->givePermissionTo([
+            'manage_questions',
+            'view_responses',
+        ]); // Staff chỉ có một số quyền
     }
 }
