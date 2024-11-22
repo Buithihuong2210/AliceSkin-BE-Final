@@ -13,45 +13,36 @@ use Illuminate\Support\Facades\Mail;
 
 class VNPayController extends Controller
 {
-    // Tạo yêu cầu thanh toán VNPay
+// Create VNPay payment request
     public function createPayment(Request $request, $order_id)
     {
         try {
-            // Xác thực order_id từ URL
             if (!is_numeric($order_id)) {
-                return response()->json(['error' => 'Định dạng order_id không hợp lệ. Nó phải là một số nguyên.'], 400);
+                return response()->json(['error' => 'Invalid order_id format. It must be an integer.'], 400);
             }
-
-            // Kiểm tra xem đơn hàng có tồn tại không
             $order = Order::find($order_id);
             if (!$order) {
-                return response()->json(['error' => 'Đơn hàng không tồn tại. Vui lòng kiểm tra lại order_id.'], 404);
+                return response()->json(['error' => 'Order does not exist. Please check order_id again.'], 404);
             }
 
-            // Lấy phương thức thanh toán từ đơn hàng
             $paymentMethod = $order->payment_method;
 
-            // Đặt trạng thái đơn hàng dựa trên phương thức thanh toán
             if ($paymentMethod === 'Cash on Delivery') {
                 $order->status = 'Waiting for Delivery';
                 $order->save();
-                return response()->json(['message' => 'Đơn hàng đã được đặt thành công. Bạn hãy chờ giao hàng'], 200);
+                return response()->json(['message' => 'The order has been placed successfully. Please wait for delivery'], 200);
             }
 
-            // Nếu là VNpay Payment, tiếp tục với quy trình thanh toán
             if ($paymentMethod === 'VNpay Payment') {
-                // Chuyển đổi số tiền sang đơn vị nhỏ nhất
                 $amount = $order->total_amount * 100;
-
-                // Kiểm tra số tiền giao dịch
-                $minAmount = 10000; // Thay đổi theo quy định của ngân hàng
-                $maxAmount = 50000000; // Thay đổi theo quy định của ngân hàng
+                $minAmount = 10000;
+                $maxAmount = 50000000;
 
                 if ($amount < $minAmount || $amount > $maxAmount) {
-                    return response()->json(['error' => 'Số tiền giao dịch không hợp lệ. Số tiền hợp lệ phải nằm trong khoảng ' . ($minAmount / 100) . ' và ' . ($maxAmount / 100) . ' VND.'], 400);
+                    return response()->json(['error' => 'Invalid transaction amount. Valid amount must be between '
+                        . ($minAmount / 100) . ' and ' . ($maxAmount / 100) . ' VND.'], 400);
                 }
 
-                // Dữ liệu để gửi
                 $inputData = [
                     "vnp_Version" => "2.1.0",
                     "vnp_TmnCode" => env('VNPAY_TMNCODE'),
@@ -61,87 +52,73 @@ class VNPayController extends Controller
                     "vnp_CurrCode" => "VND",
                     "vnp_IpAddr" => $request->ip(),
                     "vnp_Locale" => $request->input('locale', 'vn'),
-                    "vnp_OrderInfo" => "Thanh toán cho đơn hàng #" . $order->order_id,
+                    "vnp_OrderInfo" => "Pay for order #" . $order->order_id,
                     "vnp_OrderType" => 'billpayment',
                     "vnp_ReturnUrl" => env('VNPAY_RETURN_URL'),
                     "vnp_TxnRef" => $order->order_id,
                 ];
 
-                // Nếu có mã ngân hàng, thêm vào dữ liệu
                 if ($request->bank_code) {
                     $inputData['vnp_BankCode'] = $request->bank_code;
                 }
-
-                // Tạo checksum
                 ksort($inputData);
                 $hashdata = http_build_query($inputData);
                 $vnp_Url = env('VNPAY_URL') . "?" . $hashdata;
 
-                // Tính toán secure hash
                 $vnpHashSecret = env('VNPAY_HASH_SECRET');
                 if ($vnpHashSecret !== null) {
                     $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnpHashSecret);
                     $vnp_Url .= '&vnp_SecureHash=' . $vnpSecureHash;
                 }
 
-                // Trả về URL thanh toán
                 return response()->json(['payment_url' => $vnp_Url]);
             }
 
-            return response()->json(['error' => 'Phương thức thanh toán không hợp lệ.'], 400);
+            return response()->json(['error' => 'Invalid payment method.'], 400);
 
         } catch (\Exception $e) {
-            // Xử lý lỗi
-            return response()->json(['error' => 'Đã xảy ra lỗi trong quá trình tạo yêu cầu thanh toán: ' . $e->getMessage()], 500);
+            return response()->json(['error' => 'An error occurred while creating the payment request: ' . $e->getMessage()], 500);
         }
     }
 
-    // Xử lý kết quả sau khi thanh toán VNPay
+    // Process the result after VNPay payment
     public function handlePaymentReturn(Request $request)
     {
-        // Lấy các tham số từ request
         $transactionNo = $request->input('vnp_TransactionNo');
-        $orderId = $request->input('vnp_TxnRef'); // ID đơn hàng
+        $orderId = $request->input('vnp_TxnRef');
         $responseCode = $request->input('vnp_ResponseCode');
         $payDate = $request->input('vnp_PayDate');
-        $amount = $request->input('vnp_Amount'); // Lấy số tiền từ tham số URL
+        $amount = $request->input('vnp_Amount');
 
-        // Kiểm tra mã phản hồi
         $order = Order::find($orderId);
         if (!$order) {
-            return response()->json(['error' => 'Đơn hàng không tồn tại.'], 404);
+            return response()->json(['error' => 'The order does not exist.'], 404);
         }
-
-        // Kiểm tra mã phản hồi
         if ($responseCode === '00') {
-            // Cập nhật trạng thái đơn hàng thành 'Completed'
             DB::table('orders')->where('order_id', $orderId)->update([
-                'status' => 'Waiting for Delivery', // Đang chờ xử lý giao hàng
-                'payment_status' => 'Paid', // Đã thanh toán
-                'updated_at' => now(), // Cập nhật thời gian
+                'status' => 'Waiting for Delivery', // Waiting for delivery
+                'payment_status' => 'Paid', // Paid
+                'updated_at' => now(), // Update time
             ]);
 
-            // Ghi lại giao dịch vào bảng payments
             DB::table('payments')->insert([
                 'order_id' => $orderId, // The order ID
                 'transaction_no' => $transactionNo,
                 'bank_code' => $request->input('vnp_BankCode'),
                 'card_type' => $request->input('vnp_CardType'),
-                'pay_date' => now(), // Use current timestamp
-                'status' => 'success', // Transaction status
-                'amount' => $amount / 100, // Lưu số tiền đã thanh toán (vnp_Amount)
-                'created_at' => now(), // Thêm created_at
-                'updated_at' => now(), // Thêm updated_at
+                'pay_date' => now(),
+                'status' => 'success',
+                'amount' => $amount / 100,
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
 
             try {
                 Mail::to($order->user->email)->send(new PaymentSuccessMail($order));
             } catch (\Exception $e) {
-                // Log lỗi hoặc xử lý theo cách bạn muốn
                 Log::error('Failed to send payment success email: ' . $e->getMessage());
             }
 
-            // Tạo tham số cho URL trả về
             $paymentReturnUrl = env('VNPAY_RETURN_URL') . '?' . http_build_query([
                     'vnp_Amount' => $amount,
                     'vnp_BankCode' => $request->input('vnp_BankCode'),
@@ -154,31 +131,27 @@ class VNPayController extends Controller
                     'vnp_TransactionNo' => $transactionNo,
                     'vnp_TransactionStatus' => $request->input('vnp_TransactionStatus'),
                     'vnp_TxnRef' => $orderId,
-                    // Tính mã hash
                     'vnp_SecureHash' => $this->generateSecureHash($request->all())
                 ]);
 
-            // Tạo đường dẫn chi tiết đơn hàng cho frontend
-            $orderUrl = url("/order/{$orderId}"); // Trang chi tiết đơn hàng
+            $orderUrl = url("/order/{$orderId}");
 
             return response()->json([
                 'message' => 'Payment successful. Order updated.',
-                'order_url' => $orderUrl, // Đường dẫn chi tiết đơn hàng
-                'payment_return_url' => $paymentReturnUrl // URL trả về đầy đủ
+                'order_url' => $orderUrl,
+                'payment_return_url' => $paymentReturnUrl
             ], 200);
 
         } else {
-            // Nếu thanh toán thất bại, cập nhật trạng thái đơn hàng
             DB::table('orders')->where('order_id', $orderId)->update([
-                'status' => 'Failed',              // Trạng thái thanh toán thất bại
-                'payment_status' => 'Failed',      // Trạng thái thanh toán thất bại
-                'updated_at' => now(),             // Cập nhật thời gian
+                'status' => 'Failed',
+                'payment_status' => 'Failed',
+                'updated_at' => now(),
             ]);
 
-            // Hủy đơn hàng nếu cả trạng thái đơn hàng và thanh toán đều 'Failed'
             DB::table('orders')->where('order_id', $orderId)->update([
-                'status' => 'Canceled',            // Trạng thái đơn hàng bị hủy
-                'updated_at' => now(),             // Cập nhật thời gian
+                'status' => 'Canceled',
+                'updated_at' => now(),
             ]);
 
             return response()->json(['message' => 'Payment failed. Order has been canceled.'], 400);

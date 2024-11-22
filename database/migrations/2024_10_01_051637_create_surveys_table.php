@@ -14,10 +14,10 @@ class CreateSurveysTable extends Migration
     public function up()
     {
         Schema::create('surveys', function (Blueprint $table) {
-            $table->id('survey_id');  // Primary Key - Survey ID
-            $table->string('title');  // Title of the survey
-            $table->text('description')->nullable();  // Description of the survey
-            $table->timestamps();  // Created at and updated at timestamps
+            $table->id('survey_id');
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->timestamps();
         });
     }
 
