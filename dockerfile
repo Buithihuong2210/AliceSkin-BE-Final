@@ -1,41 +1,32 @@
-# Use the official PHP image as the base image
-FROM php:8.2-cli
+# Sử dụng image PHP chính thức với phiên bản phù hợp
+FROM php:8.2-fpm
 
-# Set working directory
-WORKDIR /var/www
-
-# Install system dependencies
+# Cài đặt các dependencies cần thiết
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    libonig-dev \
-    libxml2-dev \
     zip \
     unzip \
     git \
+    curl \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+    && docker-php-ext-install pdo_mysql gd
 
-# Install Composer
-COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+# Cài đặt Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Add Node.js and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g npm@latest
-
-# Copy existing application directory contents
+# Copy mã nguồn Laravel
 COPY . /var/www
 
-# Set permissions for Laravel
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+# Thiết lập thư mục làm việc
+WORKDIR /var/www
 
-# Expose port 8000 for php artisan serve
-EXPOSE 8000
+# Thiết lập quyền cho thư mục storage và bootstrap/cache
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Command to start the Laravel development server
-CMD ["php", "artisan", "serve", "--port=8000"]
+# Expose cổng 9000
+EXPOSE 9000
+
+# Lệnh khởi chạy PHP-FPM
+CMD ["php-fpm"]

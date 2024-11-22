@@ -10,63 +10,44 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 
-
 class ResponseController extends Controller
 {
     // Store a new response for a survey
     public function store(Request $request, $survey_id)
     {
-        // Validate rằng 'responses' đã được cung cấp và là một mảng
         $validated = $request->validate([
             'responses' => 'required|array',
         ]);
 
         try {
-            // Kiểm tra xem khảo sát có tồn tại không
             $survey = Survey::findOrFail($survey_id);
-
-            // Lấy tất cả code của các câu hỏi trong khảo sát
             $allQuestionsCodes = Question::where('survey_id', $survey_id)->pluck('code')->toArray();
-
-            // Lấy tất cả code của các câu trả lời đã gửi
             $answeredQuestionCodes = array_column($validated['responses'], 'code');
-
-            // Kiểm tra nếu tất cả các câu hỏi đã được trả lời
             if (array_diff($allQuestionsCodes, $answeredQuestionCodes)) {
                 return response()->json(['error' => 'You must answer all questions in the survey.'], 400);
             }
-
             $answers = [];
-
-            // Lặp qua các phản hồi và lưu trữ
             foreach ($validated['responses'] as $response) {
-                // Tìm câu hỏi dựa trên code thay vì question_id
                 $question = Question::where('code', $response['code'])
                     ->where('survey_id', $survey_id)
                     ->firstOrFail();
-
-                // Lưu câu trả lời vào mảng
                 $answers[$question->code] = $response['answer'];
-
-                // Tạo bản ghi phản hồi
                 Response::create([
                     'survey_id' => $survey_id,
-                    'question_id' => $question->question_id, // Sử dụng question_id để lưu vào bảng responses
+                    'question_id' => $question->question_id,
                     'user_id' => auth()->id(),
                     'answer_text' => $response['answer'],
                 ]);
             }
-
-            // Lọc sản phẩm dựa trên câu trả lời
             $recommendedProducts = Product::query()
                 ->when(isset($answers['Q1']), function ($query) use ($answers) {
-                    return $query->where('target_skin_type', $answers['Q1']); // Lọc theo loại da
+                    return $query->where('target_skin_type', $answers['Q1']);
                 })
                 ->when(isset($answers['Q2']), function ($query) use ($answers) {
-                    return $query->where('product_type', $answers['Q2']); // Lọc theo loại sản phẩm
+                    return $query->where('product_type', $answers['Q2']);
                 })
                 ->when(isset($answers['Q6']), function ($query) use ($answers) {
-                    return $query->where('main_ingredient', $answers['Q6']); // Lọc theo thành phần chứa
+                    return $query->where('main_ingredient', $answers['Q6']);
                 })
                 ->get();
 
@@ -168,48 +149,36 @@ class ResponseController extends Controller
 
     public function recommendItem()
     {
-        // Lấy user_id của người dùng đã đăng nhập
         $userId = auth()->id();
-
-        // Kiểm tra nếu người dùng chưa đăng nhập
         if (!$userId) {
             return response()->json([
                 'message' => 'Unauthorized. Please log in.',
             ], 401);
         }
-
-        // Lấy tất cả các câu trả lời của người dùng này
         $responses = Response::with('question')
             ->where('user_id', $userId)
             ->get();
 
-        // Kiểm tra nếu không có câu trả lời nào
         if ($responses->isEmpty()) {
             return response()->json([
                 'message' => 'No responses found for this user.',
             ], 404);
         }
-
-        // Lưu câu trả lời vào mảng để dễ dàng truy xuất
         $answers = [];
         foreach ($responses as $response) {
             $answers[$response->question->code] = $response->answer_text;
         }
-
-        // Lọc sản phẩm dựa trên câu trả lời của người dùng
         $recommendedProducts = Product::query()
             ->when(isset($answers['Q1']), function ($query) use ($answers) {
-                return $query->where('target_skin_type', $answers['Q1']); // Lọc theo loại da
+                return $query->where('target_skin_type', $answers['Q1']);
             })
             ->when(isset($answers['Q2']), function ($query) use ($answers) {
-                return $query->where('product_type', $answers['Q2']); // Lọc theo loại sản phẩm
+                return $query->where('product_type', $answers['Q2']);
             })
             ->when(isset($answers['Q6']), function ($query) use ($answers) {
-                return $query->where('main_ingredient', $answers['Q6']); // Lọc theo thành phần chính
+                return $query->where('main_ingredient', $answers['Q6']);
             })
             ->get();
-
-        // Trả về danh sách sản phẩm được đề xuất
         return response()->json($recommendedProducts, 200);
     }
 
