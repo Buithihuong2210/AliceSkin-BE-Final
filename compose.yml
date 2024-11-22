@@ -1,24 +1,12 @@
-version: '3.8'
+version: '3.0'
 
 services:
   app:
     build:
       context: .
+      dockerfile: dockerfile
     ports:
-      - "8000:9000"
-    volumes:
-      - .:/var/www
-    environment:
-      - APP_ENV=production
-      - APP_DEBUG=false
-
-
-  db:
-    image: mysql:8
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: laravel_user
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_PASSWORD: root_password
+      - "8000:8000"
+    env_file:
+      - .env
+    restart: "always"
