@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PaymentSuccessMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Order;
 use App\Models\Payment;
-
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 
 class VNPayController extends Controller
@@ -131,6 +133,13 @@ class VNPayController extends Controller
                 'created_at' => now(), // Thêm created_at
                 'updated_at' => now(), // Thêm updated_at
             ]);
+
+            try {
+                Mail::to($order->user->email)->send(new PaymentSuccessMail($order));
+            } catch (\Exception $e) {
+                // Log lỗi hoặc xử lý theo cách bạn muốn
+                Log::error('Failed to send payment success email: ' . $e->getMessage());
+            }
 
             // Tạo tham số cho URL trả về
             $paymentReturnUrl = env('VNPAY_RETURN_URL') . '?' . http_build_query([
