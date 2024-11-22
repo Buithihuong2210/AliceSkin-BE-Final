@@ -27,8 +27,14 @@ RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs && \
     npm install -g npm@latest
 
-# Copy existing application directory contents
+# Sao chép mã nguồn ứng dụng vào container
 COPY . /var/www
+
+# Sao chép file .env vào container
+COPY .env /var/www/.env
+
+# Cài đặt các phụ thuộc của Composer
+RUN composer install --no-dev --optimize-autoloader
 
 # Set permissions for Laravel
 RUN chown -R www-data:www-data /var/www \
