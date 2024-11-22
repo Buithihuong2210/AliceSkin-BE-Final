@@ -38,4 +38,4 @@ RUN chown -R www-data:www-data /var/www \
 EXPOSE 8000
 
 # Command to start the Laravel development server
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8001"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
