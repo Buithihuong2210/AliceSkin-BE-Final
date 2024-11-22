@@ -20,7 +20,7 @@ class AuthController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|email:rfc,dns|max:255|unique:users',
                 'password' => 'required|string|min:8',
-                'phone' => 'required|string|max:15', // Adjust max length as needed
+                'phone' => 'required|string|max:15',
                 'dob' => 'required|date',
                 'gender' => 'required|string|in:male,female,other',
                 'address' => 'required|string|max:255',
