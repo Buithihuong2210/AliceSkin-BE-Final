@@ -34,8 +34,8 @@ COPY . /var/www
 RUN chown -R www-data:www-data /var/www \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Expose port 8000 for php artisan serve
-EXPOSE 8000
+# Expose port 8080 for Cloud Run
+EXPOSE 8080
 
 # Command to start the Laravel development server
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=${PORT}"]
