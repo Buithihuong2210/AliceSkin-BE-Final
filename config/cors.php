@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173', 'https://alice-skin-fe.vercel.app'],
+    'allowed_origins' => ['https://aliceskin.alhkq.live', 'http://localhost:5173'],
 
     'allowed_origins_patterns' => [],
 
@@ -30,5 +30,4 @@ return [
     'max_age' => 0,
 
     'supports_credentials' => false,
-
 ];
