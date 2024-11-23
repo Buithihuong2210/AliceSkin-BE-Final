@@ -21,7 +21,6 @@ class OrderController extends Controller
         try {
             DB::beginTransaction();
 
-            // Validate the incoming request
             $request->validate([
                 'shipping_id' => 'required|exists:shippings,id',
                 'shipping_address' => 'required|string',
@@ -29,33 +28,28 @@ class OrderController extends Controller
                 'payment_method' => 'required|in:Cash on Delivery,VNpay Payment',
             ]);
 
-            // Lấy user_id từ thông tin người dùng đã xác thực
             $userId = auth()->id();
 
-            // Lấy giỏ hàng của người dùng
             $cart = ShoppingCart::with('items.product')
                 ->where('user_id', $userId)
-                ->where('status', 'active') // Đảm bảo giỏ hàng đang hoạt động
+                ->where('status', 'active')
                 ->first();
 
             if (!$cart) {
-                return response()->json(['error' => 'Không tìm thấy giỏ hàng hoặc giỏ hàng trống.'], 404);
+                return response()->json(['error' => 'Cart not found or cart is empty.'], 404);
             }
 
             if ($cart->items->isEmpty()) {
-                return response()->json(['error' => 'Giỏ hàng trống.'], 400);
+                return response()->json(['error' => 'Cart is empty.'], 400);
             }
 
-            // Lấy tổng giá trị giỏ hàng
             $cartController = new CartController();
             $cartData = $cartController->getCartWithSubtotal($cart);
             $subtotalOfCart = floatval($cartData['subtotal']);
 
-            // Lấy thông tin vận chuyển
             $shipping = Shipping::findOrFail($request->shipping_id);
             $shippingCost = floatval($shipping->shipping_amount);
 
-            // Xử lý mã giảm giá (nếu có)
             $discountAmount = 0;
             $voucherId = null;
 
@@ -67,52 +61,44 @@ class OrderController extends Controller
                 }
             }
 
-            // Tính toán tổng số tiền
             $totalAmount = $subtotalOfCart + $shippingCost - $discountAmount;
 
-            // Đặt trạng thái đơn hàng và thanh toán ban đầu
             $orderStatus = 'Pending';
             $paymentStatus = 'Pending';
 
             if ($request->payment_method == 'Cash on Delivery') {
-                $orderStatus = 'Waiting for Delivery'; // Nếu chọn COD, chuyển sang Waiting for Delivery
+                $orderStatus = 'Waiting for Delivery';
             } else {
-                $paymentStatus = 'Waiting for Payment'; // Đợi thanh toán cho các phương thức khác như VNPay
+                $paymentStatus = 'Waiting for Payment';
             }
 
-
-            // Tạo đơn hàng
             $order = Order::create([
                 'user_id' => $userId,
-                'subtotal_of_cart' => round($subtotalOfCart, 2), // Cần có giá trị hợp lệ
-                'total_amount' => round($totalAmount, 2), // Cần có giá trị hợp lệ
+                'subtotal_of_cart' => round($subtotalOfCart, 2),
+                'total_amount' => round($totalAmount, 2),
                 'shipping_id' => $request->shipping_id,
                 'voucher_id' => $voucherId,
-                'shipping_name' => $shipping->name, // Đảm bảo có giá trị
-                'shipping_cost' => $shippingCost, // Đảm bảo có giá trị
+                'shipping_name' => $shipping->name,
+                'shipping_cost' => $shippingCost,
                 'shipping_address' => $request->shipping_address,
                 'payment_method' => $request->payment_method,
                 'payment_status' => $paymentStatus,
                 'status' => $orderStatus,
                 'order_date' => now(),
-                'discount' => $discountAmount, // Lưu giá trị giảm giá vào trường discount
+                'discount' => $discountAmount,
             ]);
 
-
-            // Tính toán ngày giao hàng dự kiến
-            $processingDays = 2; // Số ngày xử lý (ví dụ)
-            $shippingDays = 3; // Số ngày giao hàng (ví dụ)
+            $processingDays = 2;
+            $shippingDays = 3;
             $expectedDeliveryDate = $this->calculateExpectedDeliveryDate($order->order_date, $processingDays, $shippingDays);
 
-            // Cập nhật ngày giao hàng dự kiến vào đơn hàng
             $order->update(['expected_delivery_date' => $expectedDeliveryDate]);
 
-            // Lưu các mục đơn hàng vào bảng order_items
             foreach ($cart->items as $cartItem) {
                 $product = $cartItem->product;
                 if ($product->quantity < $cartItem->quantity) {
                     DB::rollBack();
-                    return response()->json(['error' => "Không đủ tồn kho cho sản phẩm: {$product->name}"], 400);
+                    return response()->json(['error' => "Insufficient inventory for product: {$product->name}"], 400);
                 }
 
                 OrderItem::create([
@@ -122,11 +108,8 @@ class OrderController extends Controller
                     'price' => floatval($cartItem->price),
                 ]);
 
-//                echo "Số lượng sản phẩm trước khi lưu: {$product->quantity}\n";
-
                 $product->quantity -= $cartItem->quantity;
                 $product->save();
-//                echo "Số lượng tồn kho sau khi lưu: {$product->quantity}\n";
 
             }
 
@@ -172,15 +155,12 @@ class OrderController extends Controller
 
     protected function calculateExpectedDeliveryDate($orderDate, $processingDays, $shippingDays)
     {
-        // Chuyển đổi orderDate sang đối tượng Carbon
         $expectedDate = Carbon::parse($orderDate)->addDays($processingDays + $shippingDays);
 
-        // Kiểm tra nếu ngày dự kiến rơi vào cuối tuần
         while ($expectedDate->isWeekend()) {
-            $expectedDate->addDay(); // Nếu rơi vào cuối tuần, cộng thêm 1 ngày
+            $expectedDate->addDay(); // If it falls on weekend, add 1 day
         }
-
-        return $expectedDate->format('Y-m-d'); // Trả về ngày theo định dạng 'YYYY-MM-DD'
+        return $expectedDate->format('Y-m-d');
     }
 
     public function showAll()
