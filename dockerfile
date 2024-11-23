@@ -1,47 +1,36 @@
-# Use the official PHP image as the base image
-FROM php:8.2-cli
+# Use the official PHP image with necessary extensions
+FROM php:8.1-fpm
 
 # Set working directory
-WORKDIR /var/www
+WORKDIR /var/www/html
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    build-essential \
+    git \
     curl \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libonig-dev \
-    libxml2-dev \
     zip \
     unzip \
-    git \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 
 # Install Composer
 COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 
-# Add Node.js and npm
-RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
-    apt-get install -y nodejs && \
-    npm install -g npm@latest
+# Copy the Laravel project files into the container
+COPY . /var/www/html
+ENV COMPOSER_ALLOW_SUPERUSER=1
+# Install Laravel dependencies
+RUN composer update
+RUN composer install
 
-# Sao chép mã nguồn ứng dụng vào container
-COPY . /var/www
+# Set appropriate permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Sao chép file .env vào container
-COPY .env /var/www/.env
-
-# Cài đặt các phụ thuộc của Composer
-RUN composer install --no-dev --optimize-autoloader
-
-# Set permissions for Laravel
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
-
-# Expose port 8000 for php artisan serve
+# Expose port 8000
 EXPOSE 8000
 
-# Command to start the Laravel development server
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Start Laravel's development server
+CMD php artisan serve --host=0.0.0.0 --port=8000
