@@ -21,6 +21,7 @@ return [
 
     'allowed_origins' => [
         'https://alice-skin-fe.vercel.app',
+        'https://aliceskin.alhkq.live'
     ],
     'allowed_origins_patterns' => [],
 
