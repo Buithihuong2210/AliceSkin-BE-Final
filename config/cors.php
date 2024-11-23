@@ -17,12 +17,10 @@ return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    'allowed_methods' => ['*', "OPTIONS"],
+    'allowed_methods' => ['*'],
 
-    'allowed_origins' => [
-        'https://alice-skin-fe.vercel.app',
-        'https://aliceskin.alhkq.live'
-    ],
+    'allowed_origins' => ['https://aliceskin.alhkq.live', 'http://localhost:5173'],
+
     'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
@@ -31,5 +29,5 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => true,
+    'supports_credentials' => false,
 ];
