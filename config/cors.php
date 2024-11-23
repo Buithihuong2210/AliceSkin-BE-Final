@@ -17,7 +17,7 @@ return [
 
     'paths' => ['api/*', 'sanctum/csrf-cookie'],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['*', "OPTIONS"],
 
     'allowed_origins' => [
         'https://alice-skin-fe.vercel.app',
