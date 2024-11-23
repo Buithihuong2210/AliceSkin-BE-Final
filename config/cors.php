@@ -19,8 +19,9 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173', 'https://alice-skin-fe.vercel.app'],
-
+    'allowed_origins' => [
+        'https://alice-skin-fe.vercel.app',
+    ],
     'allowed_origins_patterns' => [],
 
     'allowed_headers' => ['*'],
