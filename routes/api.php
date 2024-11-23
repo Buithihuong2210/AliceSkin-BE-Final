@@ -111,6 +111,7 @@ Route::prefix('hashtags')->group(function () {
 });
 
 
+
 // User routes
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', function (Request $request) {

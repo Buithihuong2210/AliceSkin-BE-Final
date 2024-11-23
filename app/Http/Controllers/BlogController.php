@@ -416,6 +416,45 @@ class BlogController extends Controller
         }
     }
 
+
+//    public function changeStatus(Request $request, $blog_id)
+//    {
+//        try {
+//            // Ensure the user has the 'manage_blogs' permission
+//            if (!auth()->user()->can('manage_blogs')) {
+//                return response()->json(['message' => 'You do not have permission to change the blog status.'], 403);
+//            }
+//
+//            // Find the blog by ID
+//            $blog = Blog::findOrFail($blog_id);
+//
+//            // Validate the input data for status
+//            $validatedData = $request->validate([
+//                'status' => 'required|in:draft,published',
+//            ]);
+//
+//            // Update the blog status
+//            $blog->update([
+//                'status' => $validatedData['status'],
+//            ]);
+//
+//            // Return the updated blog as a response
+//            return response()->json($blog);
+//        } catch (ValidationException $e) {
+//            // Handle validation errors
+//            return response()->json([
+//                'message' => 'Validation failed',
+//                'errors' => $e->errors(),
+//            ], 422);
+//        } catch (\Exception $e) {
+//            // Handle other errors
+//            return response()->json([
+//                'message' => 'An error occurred while changing the blog status',
+//                'error' => $e->getMessage(),
+//            ], 500);
+//        }
+//    }
+
     public function setLikes(Request $request, $blog_id)
     {
         // Kiểm tra xem người dùng có xác thực hay không
