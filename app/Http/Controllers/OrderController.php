@@ -507,7 +507,7 @@ class OrderController extends Controller
             ]);
         } catch (ModelNotFoundException $e) {
             // Nếu không tìm thấy đơn hàng
-            return respse()->json(['error' => 'Order not found'], 404);on
+            return response()->json(['error' => 'Order not found'], 404);
         } catch (QueryException $e) {
             // Lỗi cơ sở dữ liệu
             return response()->json(['error' => 'Database error: ' . $e->getMessage()], 500);
