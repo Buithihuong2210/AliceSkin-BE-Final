@@ -34,7 +34,6 @@ class CartController extends Controller
             return response()->json(['error' => 'Error retrieving cart: ' . $e->getMessage()], 500);
         }
     }
-
     /**
      * Add a product to the cart.
      *
