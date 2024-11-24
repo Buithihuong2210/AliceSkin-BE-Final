@@ -1,36 +1,35 @@
-# Use the official PHP image with necessary extensions
-FROM php:8.1-fpm
+FROM ubuntu:latest
 
-# Set working directory
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get install -y \
+    software-properties-common \
+    curl \
+    git \
+    unzip \
+    zip \
+    php \
+    php-cli \
+    php-mbstring \
+    php-xml \
+    php-bcmath \
+    php-tokenizer \
+    php-json \
+    php-mysql \
+    php-zip \
+    php-curl \
+    apache2 \
+    && apt-get clean
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
 WORKDIR /var/www/html
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    zip \
-    unzip \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+COPY . .
 
-# Install Composer
-COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
-
-# Copy the Laravel project files into the container
-COPY . /var/www/html
-ENV COMPOSER_ALLOW_SUPERUSER=1
-# Install Laravel dependencies
-RUN composer update
 RUN composer install
 
-# Set appropriate permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-
-# Expose port 8000
 EXPOSE 8000
 
-# Start Laravel's development server
-CMD php artisan serve --host=0.0.0.0 --port=8000
+CMD ["php", "artisan", "serve", "--host", "0.0.0.0", "--port", "8000"]
