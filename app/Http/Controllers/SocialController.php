@@ -34,7 +34,7 @@ class SocialController extends Controller
             // Return a response, such as a JSON token
             $tk = $user->createToken('authToken')->plainTextToken;
 
-            return response()->redirectTo('http://localhost:5173/home' . $tk);
+            return response()->redirectTo('http://localhost:3000/home?tk='.$tk);
 
         } catch (\Exception $e) {
             // Xử lý nếu gặp lỗi và chuyển hướng đến trang đăng nhập
