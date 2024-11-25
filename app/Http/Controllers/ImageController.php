@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ImageController extends Controller
 {
-
+// trigger build
     protected $storageService;
 
     public function __construct(GoogleCloudStorageService $storageService)
