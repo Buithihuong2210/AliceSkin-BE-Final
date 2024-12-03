@@ -8,7 +8,7 @@ use Illuminate\Validation\ValidationException;
 use Exception;
 
 use Illuminate\Support\Facades\Date;
-use Carbon\Carbon; // Đảm bảo bạn đã cài đặt Carbon
+use Carbon\Carbon;
 
 
 class VoucherController extends Controller
@@ -17,15 +17,13 @@ class VoucherController extends Controller
     public function index()
     {
         try {
-            // Kiểm tra và cập nhật trạng thái cho các voucher đã hết hạn
             $this->checkVoucherExpiry();
 
-            // Lấy tất cả các voucher và cập nhật trạng thái của chúng
             $vouchers = Voucher::all();
 
-            return response()->json($vouchers, 200); // Trả về danh sách voucher dưới dạng JSON
+            return response()->json($vouchers, 200);
         } catch (Exception $e) {
-            return response()->json(['error' => 'Không thể lấy danh sách voucher'], 500); // Trả về lỗi nếu có sự cố
+            return response()->json(['error' => 'Không thể lấy danh sách voucher'], 500);
         }
     }
 
@@ -41,12 +39,9 @@ class VoucherController extends Controller
                 'expiry_date' => 'required|date|after_or_equal:start_date',
             ]);
 
-            // Lấy ngày hiện tại
             $currentDate = Carbon::now();
-            // Kiểm tra xem expiry_date có còn hạn không
             $status = ($request->expiry_date >= $currentDate) ? 'active' : 'inactive';
 
-            // Tạo voucher mới
             $voucher = Voucher::create(array_merge($request->all(), ['status' => $status]));
 
             return response()->json($voucher, 201);
@@ -62,7 +57,6 @@ class VoucherController extends Controller
     {
         $currentDate = Carbon::now();
 
-        // Tìm tất cả các voucher đang active đã hết hạn
         $expiredVouchers = Voucher::where('status', 'active')
             ->where('expiry_date', '<', $currentDate)
             ->get();
@@ -78,11 +72,11 @@ class VoucherController extends Controller
     public function show($voucher_id)
     {
         try {
-            $voucher = Voucher::findOrFail($voucher_id); // Tìm voucher theo ID hoặc thất bại
+            $voucher = Voucher::findOrFail($voucher_id);
 
-            return response()->json($voucher, 200); // Trả về thông tin voucher dưới dạng JSON
+            return response()->json($voucher, 200);
         } catch (Exception $e) {
-            return response()->json(['error' => 'Voucher không tồn tại'], 404); // Trả về lỗi nếu không tìm thấy
+            return response()->json(['error' => 'Voucher không tồn tại'], 404);
         }
     }
 
@@ -100,12 +94,9 @@ class VoucherController extends Controller
                 'expiry_date' => 'required|date|after_or_equal:start_date',
             ]);
 
-            // Lấy ngày hiện tại
             $currentDate = Carbon::now();
-            // Kiểm tra xem expiry_date có còn hạn không
             $status = ($request->expiry_date >= $currentDate) ? 'active' : 'inactive';
 
-            // Cập nhật voucher với dữ liệu mới và trạng thái
             $voucher->update(array_merge($request->all(), ['status' => $status]));
 
             return response()->json($voucher, 200);
@@ -120,15 +111,12 @@ class VoucherController extends Controller
     public function changeStatus(Request $request, $voucher_id)
     {
         try {
-            // Validate that the status is either 'active' or 'inactive'
             $request->validate([
                 'status' => 'required|in:active,inactive',
             ]);
 
-            // Find the voucher by ID
             $voucher = Voucher::findOrFail($voucher_id);
 
-            // Update the status as provided in the request
             $voucher->status = $request->input('status');
             $voucher->save();
 

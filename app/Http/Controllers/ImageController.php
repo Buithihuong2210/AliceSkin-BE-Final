@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Storage;
 
 class ImageController extends Controller
 {
-// trigger build
     protected $storageService;
 
     public function __construct(GoogleCloudStorageService $storageService)
@@ -17,23 +16,21 @@ class ImageController extends Controller
     }
     public function uploadImage(Request $request)
     {
-        // Validate the uploaded file
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Allow only specific image types
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        // Check if the file is valid and uploaded
         if ($request->hasFile('image') && $request->file('image')->isValid()) {
             // Retrieve the uploaded file
             $file = $request->file('image');
             $filePath = $file->getRealPath();
-            $fileName = $file->hashName(); // Generate a unique name for the file
-            $bucketName = 'alice-skin'; // Replace with your bucket name
+            $fileName = $file->hashName();
+            $bucketName = 'alice-skin';
 
             // Upload the file to Google Cloud Storage
             $this->storageService->uploadFile($bucketName, $filePath, [
                 'name' => $fileName,
-                'predefinedAcl' => 'publicRead', // Make it public if needed
+                'predefinedAcl' => 'publicRead',
             ]);
 
             // Get the public URL of the uploaded file
@@ -41,7 +38,7 @@ class ImageController extends Controller
 
             return response()->json([
                 'message' => 'Image uploaded successfully!',
-                'url' => $url, // Return the full URL of the uploaded image
+                'url' => $url,
             ], 200);
         }
 

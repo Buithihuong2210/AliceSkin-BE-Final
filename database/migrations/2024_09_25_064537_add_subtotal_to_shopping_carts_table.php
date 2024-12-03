@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('shopping_carts', function (Blueprint $table) {
-            $table->decimal('subtotal', 10, 2)->default(0)->after('user_id'); // Add subtotal column after user_id
+            $table->decimal('subtotal', 10, 2)->default(0)->after('user_id');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('shopping_carts', function (Blueprint $table) {
-            $table->dropColumn('subtotal'); // Drop subtotal column
+            $table->dropColumn('subtotal');
         });
     }
 };

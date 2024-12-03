@@ -8,7 +8,6 @@ class Role extends Model
 {
     use HasFactory;
 
-    // Phương thức này định nghĩa quan hệ many-to-many với bảng permissions
     public function permissions()
     {
         return $this->belongsToMany(Permission::class, 'permission_role', 'role_id', 'permission_id');

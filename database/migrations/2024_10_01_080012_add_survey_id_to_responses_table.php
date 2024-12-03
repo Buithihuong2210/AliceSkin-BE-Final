@@ -13,9 +13,8 @@ class AddSurveyIdToResponsesTable extends Migration
     public function up()
     {
         Schema::table('responses', function (Blueprint $table) {
-            $table->unsignedBigInteger('survey_id')->after('user_id'); // Thêm trường survey_id
+            $table->unsignedBigInteger('survey_id')->after('user_id');
 
-            // Ràng buộc khóa ngoại liên kết đến bảng surveys
             $table->foreign('survey_id')->references('survey_id')->on('surveys')->onDelete('cascade');
         });
     }
@@ -28,8 +27,8 @@ class AddSurveyIdToResponsesTable extends Migration
     public function down()
     {
         Schema::table('responses', function (Blueprint $table) {
-            $table->dropForeign(['survey_id']); // Xóa ràng buộc khóa ngoại
-            $table->dropColumn('survey_id'); // Xóa trường survey_id
+            $table->dropForeign(['survey_id']);
+            $table->dropColumn('survey_id');
         });
     }
 }

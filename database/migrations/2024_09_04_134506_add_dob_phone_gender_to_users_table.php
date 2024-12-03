@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->date('dob')->nullable();       // Add date of birth column
-            $table->string('phone')->nullable();   // Add phone column
-            $table->string('gender')->nullable();  // Add gender column
-            $table->string('image')->nullable();  // Add gender column
-            $table->integer('role_id')->nullable();  // Add gender column
+            $table->date('dob')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('image')->nullable();
+            $table->integer('role_id')->nullable();
         });
     }
 

@@ -9,10 +9,8 @@ class Product extends Model
 {
     use HasFactory;
 
-    // Specify the primary key
     protected $primaryKey = 'product_id';
 
-    // Specify which fields can be mass-assigned
     protected $fillable = [
         'name',
         'description',
@@ -27,12 +25,11 @@ class Product extends Model
         'volume',
         'nature',
         'rating',
-        'product_type', // Thêm loại sản phẩm
-        'main_ingredient', // Thêm thành phần chính
-        'target_skin_type', // Thêm đối tượng sử dụng
+        'product_type',
+        'main_ingredient',
+        'target_skin_type',
     ];
 
-    // Define the status constants
     const STATUS_AVAILABLE = 'available';
     const STATUS_OUT_OF_STOCK = 'out of stock';
 
@@ -65,12 +62,10 @@ class Product extends Model
         parent::boot();
 
         static::creating(function ($product) {
-            // Calculate and set the discounted price when creating the product
             $product->discounted_price = $product->calculateDiscountedPrice();
         });
 
         static::updating(function ($product) {
-            // Calculate and set the discounted price when updating the product
             $product->discounted_price = $product->calculateDiscountedPrice();
         });
     }

@@ -8,9 +8,9 @@ class AddFieldsToProductsTable extends Migration
     public function up()
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->string('product_type')->nullable(); // Loại sản phẩm
-            $table->string('main_ingredient')->nullable(); // Thành phần chính
-            $table->string('target_skin_type')->nullable(); // Đối tượng sử dụng
+            $table->string('product_type')->nullable();
+            $table->string('main_ingredient')->nullable();
+            $table->string('target_skin_type')->nullable();
         });
     }
 

@@ -16,7 +16,6 @@ class Brand extends Model
         'total_products'
     ];
 
-    // Define relationship with products
     public function products()
     {
         return $this->hasMany(Product::class, 'brand_id', 'brand_id');

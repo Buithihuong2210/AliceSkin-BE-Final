@@ -20,7 +20,7 @@ return new class extends Migration
 
 
             $table->foreign('shopping_cart_id')->references('id')->on('shopping_carts')->onDelete('cascade');
-            $table->foreign('product_id')->references('product_id')->on('products')->onDelete('cascade'); // Tham chiếu đến 'product_id'
+            $table->foreign('product_id')->references('product_id')->on('products')->onDelete('cascade');
         });
 
     }

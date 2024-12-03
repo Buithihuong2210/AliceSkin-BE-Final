@@ -8,14 +8,14 @@ class AddOrderDateToOrdersTable extends Migration
     public function up()
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->date('order_date')->nullable(); // Thêm cột order_date
+            $table->date('order_date')->nullable();
         });
     }
 
     public function down()
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->dropColumn('order_date'); // Xóa cột order_date khi quay lại
+            $table->dropColumn('order_date');
         });
     }
 }

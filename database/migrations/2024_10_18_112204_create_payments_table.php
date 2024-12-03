@@ -12,16 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('payments', function (Blueprint $table) {
-            $table->id('payment_id'); // Khóa chính
-            $table->unsignedBigInteger('order_id'); // Khóa ngoại trỏ tới bảng orders
-            $table->string('transaction_no'); // Số giao dịch
-            $table->string('bank_code')->nullable(); // Mã ngân hàng
-            $table->string('card_type')->nullable(); // Loại thẻ
-            $table->timestamp('pay_date')->nullable(); // Ngày thanh toán
-            $table->string('status'); // Trạng thái thanh toán
+            $table->id('payment_id');
+            $table->unsignedBigInteger('order_id');
+            $table->string('transaction_no');
+            $table->string('bank_code')->nullable();
+            $table->string('card_type')->nullable();
+            $table->timestamp('pay_date')->nullable();
+            $table->string('status');
             $table->timestamps();
 
-            // Khóa ngoại với ON DELETE CASCADE
             $table->foreign('order_id')->references('order_id')->on('orders')->onDelete('cascade');
         });
     }

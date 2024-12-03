@@ -11,7 +11,7 @@ class SurveyController extends Controller
     {
         try {
             $surveys = Survey::all();
-            return response()->json($surveys, 200); // List all surveys
+            return response()->json($surveys, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to retrieve surveys.'], 500);
         }
@@ -21,7 +21,7 @@ class SurveyController extends Controller
     {
         try {
             $survey = Survey::findOrFail($survey_id);
-            return response()->json($survey, 200); // Show a specific survey
+            return response()->json($survey, 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Survey not found.'], 404);
         } catch (\Exception $e) {
@@ -38,7 +38,7 @@ class SurveyController extends Controller
 
         try {
             $survey = Survey::create($validated);
-            return response()->json($survey, 201); // Create a new survey
+            return response()->json($survey, 201);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to create survey.'], 500);
         }
@@ -53,7 +53,7 @@ class SurveyController extends Controller
 
         try {
             $survey = Survey::findOrFail($survey_id);
-            $survey->update($validated); // Update a specific survey
+            $survey->update($validated);
             return response()->json($survey, 200);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Survey not found.'], 404);
@@ -66,8 +66,8 @@ class SurveyController extends Controller
     {
         try {
             $survey = Survey::findOrFail($survey_id);
-            $survey->delete(); // Delete a specific survey
-            return response()->json(['message' => 'Survey deleted successfully.'], 204); // Respond with 204 No Content
+            $survey->delete();
+            return response()->json(['message' => 'Survey deleted successfully.'], 204);
         } catch (ModelNotFoundException $e) {
             return response()->json(['error' => 'Survey not found.'], 404);
         } catch (\Exception $e) {

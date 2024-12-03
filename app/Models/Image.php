@@ -14,7 +14,6 @@ class Image extends Model
         'image_url',
     ];
 
-    // Define the relationship to the product
     public function product()
     {
         return $this->belongsTo(Product::class, 'product_id', 'product_id');

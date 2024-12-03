@@ -41,9 +41,9 @@ class ShippingController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|unique:shippings,name', // Ensure name is unique
+                'name' => 'required|string|unique:shippings,name',
                 'shipping_amount' => 'required|numeric',
-                'method' => 'required|string', // Kiểm tra trường method
+                'method' => 'required|string',
 
             ]);
 
@@ -68,9 +68,9 @@ class ShippingController extends Controller
             $shipping = Shipping::findOrFail($shipping_id);
 
             $validator = Validator::make($request->all(), [
-                'name' => 'required|string|unique:shippings,name,' . $shipping->id, // Ensure name is unique except for current record
+                'name' => 'required|string|unique:shippings,name,' . $shipping->id,
                 'shipping_amount' => 'required|numeric',
-                'method' => 'required|string', // Kiểm tra trường method
+                'method' => 'required|string',
             ]);
 
             if ($validator->fails()) {
@@ -91,22 +91,17 @@ class ShippingController extends Controller
     public function destroy($shipping_id)
     {
         try {
-            // Attempt to find the shipping record by ID
             $shipping = Shipping::findOrFail($shipping_id);
 
-            // Delete the shipping record
             $shipping->delete();
 
-            // Return a 204 No Content response
             return response()->json(['message' => "Shipping {$shipping_id} deleted successfully"], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // Handle the case where the shipping record is not found
             return response()->json([
                 'message' => 'Shipping not found.',
                 'error' => $e->getMessage(),
             ], 404);
         } catch (\Exception $e) {
-            // Handle any other exceptions
             return response()->json([
                 'message' => 'An error occurred while deleting the shipping record.',
                 'error' => $e->getMessage(),

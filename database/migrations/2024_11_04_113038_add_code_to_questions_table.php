@@ -12,7 +12,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('questions', function (Blueprint $table) {
-            $table->string('code')->nullable()->after('question_text')->unique(); // Thêm cột 'code' với giá trị duy nhất
+            $table->string('code')->nullable()->after('question_text')->unique();
         });
     }
 

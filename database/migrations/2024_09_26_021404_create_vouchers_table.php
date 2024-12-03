@@ -12,12 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('vouchers', function (Blueprint $table) {
-            $table->id('voucher_id'); // Primary key
-            $table->string('code')->unique(); // Voucher code
-            $table->decimal('discount_amount', 8, 2); // Discount amount or percentage
-            $table->enum('status', ['active', 'inactive']); // Voucher status
-            $table->date('start_date'); // Start date of voucher validity
-            $table->date('expiry_date'); // Expiry date of voucher validity
+            $table->id('voucher_id');
+            $table->string('code')->unique();
+            $table->decimal('discount_amount', 8, 2);
+            $table->enum('status', ['active', 'inactive']);
+            $table->date('start_date');
+            $table->date('expiry_date');
             $table->timestamps();
         });
     }

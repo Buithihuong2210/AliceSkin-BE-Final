@@ -9,12 +9,10 @@ class Order extends Model
 {
     use HasFactory;
 
-    // Specify the table name if it's not the plural of the model name
     protected $table = 'orders';
-    protected $primaryKey = 'order_id'; // Specify your custom primary key
-    public $incrementing = true; // Ensure this is set to true for auto-incrementing
+    protected $primaryKey = 'order_id';
+    public $incrementing = true;
 
-    // Allow mass assignment for these fields
     protected $fillable = [
         'user_id',
         'shipping_id',
@@ -31,7 +29,6 @@ class Order extends Model
         'expected_delivery_date',
     ];
 
-    // Define relationships
     public function shipping()
     {
         return $this->belongsTo(Shipping::class, 'shipping_id');
@@ -54,12 +51,12 @@ class Order extends Model
 
     public function cart()
     {
-        return $this->hasOne(ShoppingCart::class, 'user_id', 'user_id'); // Adjust the foreign key if needed
+        return $this->hasOne(ShoppingCart::class, 'user_id', 'user_id');
     }
 
     public function orderItems()
     {
-        return $this->hasMany(OrderItem::class, 'order_id', 'order_id'); // Chỉ định khóa chính và khóa ngoại
+        return $this->hasMany(OrderItem::class, 'order_id', 'order_id');
     }
 
 }

@@ -206,44 +206,34 @@ class OrderController extends Controller
 
     public function updateOrderStatus(Request $request, $order_id)
     {
-        // Tìm đơn hàng theo ID
         $order = Order::find($order_id);
         if (!$order) {
             return response()->json(['error' => 'Đơn hàng không tồn tại.'], 404);
         }
 
-        // Kiểm tra nếu đơn hàng đã hoàn thành, không được cập nhật nữa
         if ($order->status === 'Completed') {
             return response()->json(['error' => 'Đơn hàng đã hoàn thành, không thể cập nhật trạng thái.'], 400);
         }
 
-        // Kiểm tra trạng thái thanh toán, nếu chưa thanh toán thì không cập nhật trạng thái
         if ($order->payment_status === 'Waiting for Payment') {
             return response()->json(['error' => 'Đơn hàng chưa được thanh toán, trạng thái vẫn là Pending.'], 400);
         }
 
         // Kiểm tra phương thức thanh toán
         if ($order->payment_method === 'Cash on Delivery') {
-            // Nếu là COD và trạng thái là 'Waiting for Delivery'
             if ($order->status === 'Waiting for Delivery') {
-                // Xử lý logic cho trạng thái 'Waiting for Delivery'
                 return response()->json(['error' => 'Đơn hàng đang chờ giao hàng, không thể cập nhật trạng thái.'], 400);
             } elseif ($order->status === 'Delivered') {
-                // Khi hàng đã được giao và cần chuyển sang trạng thái 'Completed'
                 $order->status = 'Completed';
             }
         } elseif ($order->payment_method === 'VNpay Payment') {
-            // Nếu là VNPay và trạng thái là 'Waiting for Delivery'
             if ($order->status === 'Waiting for Delivery') {
-                // Xử lý logic cho trạng thái 'Waiting for Delivery'
                 return response()->json(['error' => 'Đơn hàng đang chờ giao hàng, không thể cập nhật trạng thái.'], 400);
             } elseif ($order->status === 'Delivered') {
-                // Khi hàng đã được giao và cần chuyển sang trạng thái 'Completed'
                 $order->status = 'Completed';
             }
         }
 
-        // Lưu trạng thái đơn hàng nếu có sự thay đổi
         if ($order->isDirty('status')) {
             $order->save();
         }
@@ -254,53 +244,44 @@ class OrderController extends Controller
     public function confirmDelivery($order_id)
     {
         try {
-            // Lấy thông tin đơn hàng
             $order = DB::table('orders')->where('order_id', $order_id)->first();
 
-            // Kiểm tra nếu đơn hàng không tồn tại
             if (!$order) {
                 return response()->json(['error' => 'Order not found'], 404);
             }
 
-            // Lưu giá trị payment_method vào biến
-            $paymentMethod = trim($order->payment_method); // Loại bỏ khoảng trắng
+            $paymentMethod = trim($order->payment_method);
 
             // Kiểm tra phương thức thanh toán
             if ($paymentMethod === 'Cash on Delivery') {
-                // Nếu là COD, cập nhật trạng thái đơn hàng và thanh toán
                 if ($order->status === 'Delivered') {
                     return response()->json(['error' => 'Order has already been delivered'], 400);
                 }
 
-                // Cập nhật trạng thái đơn hàng và thanh toán
                 DB::table('orders')->where('order_id', $order_id)->update([
-                    'status' => 'Delivered',            // Đơn hàng đã giao
-                    'payment_status' => 'Paid',         // Đã thanh toán khi nhận hàng
+                    'status' => 'Delivered',
+                    'payment_status' => 'Paid',
                 ]);
 
-                // Lấy số tiền cụ thể của đơn hàng
                 $amount = number_format($order->total_amount, 0) . ' VND';
 
                 return response()->json([
                     'message' => 'Order delivered and payment confirmed successfully',
-                    'amount' => $amount,  // Số tiền của đơn hàng cụ thể
+                    'amount' => $amount,
                 ], 200);
 
             } elseif ($paymentMethod === 'VNpay Payment') {
-                // Nếu là VNPay, chỉ cần cập nhật trạng thái đơn hàng
                 if ($order->status === 'Delivered') {
                     return response()->json(['error' => 'Order has already been delivered'], 400);
                 }
 
-                // Giả định xử lý kết quả thanh toán từ VNPay
-                $paymentStatus = $this->checkVnPayPaymentStatus($order_id); // Hàm kiểm tra trạng thái từ VNPay
+                $paymentStatus = $this->checkVnPayPaymentStatus($order_id);
 
                 // Nếu thanh toán thất bại
                 if ($paymentStatus === 'Failed') {
-                    // Cập nhật trạng thái đơn hàng và trạng thái thanh toán
                     DB::table('orders')->where('order_id', $order_id)->update([
-                        'status' => 'Failed',              // Đơn hàng thất bại
-                        'payment_status' => 'Failed',      // Thanh toán thất bại
+                        'status' => 'Failed',
+                        'payment_status' => 'Failed',
                     ]);
 
                     return response()->json([
@@ -308,21 +289,18 @@ class OrderController extends Controller
                     ], 400);
                 }
 
-                // Cập nhật trạng thái đơn hàng
                 DB::table('orders')->where('order_id', $order_id)->update([
-                    'status' => 'Delivered',            // Đơn hàng đã giao
+                    'status' => 'Delivered',
                 ]);
 
-                // Lấy số tiền của đơn hàng
-                $amount = number_format($order->total_amount, 0) . ' VND'; // Định dạng số tiền
+                $amount = number_format($order->total_amount, 0) . ' VND';
 
                 return response()->json([
                     'message' => 'Order delivered successfully',
-                    'amount' => $amount,  // Trả về số tiền của đơn hàng
+                    'amount' => $amount,
                 ], 200);
 
             } else {
-                // Nếu phương thức thanh toán không hợp lệ
                 return response()->json(['error' => 'Invalid payment method'], 400);
             }
         } catch (\Exception $e) {
@@ -333,30 +311,26 @@ class OrderController extends Controller
     public function getTotalPaymentsForBothMethods()
     {
         try {
-            // Tính tổng số tiền của các đơn hàng sử dụng phương thức thanh toán là VNPay và đã hoàn tất (Completed)
             $totalVNPay = DB::table('orders')
                 ->where('payment_method', 'VNpay Payment')
                 ->where('status', 'Completed')
-                ->sum('total_amount'); // Tính tổng số tiền cho VNPay
+                ->sum('total_amount');
 
-            // Tính tổng số tiền của các đơn hàng sử dụng phương thức thanh toán là Cash on Delivery (COD) và đã hoàn tất (Completed)
             $totalCOD = DB::table('orders')
                 ->where('payment_method', 'Cash on Delivery')
                 ->where('status', 'Completed')
-                ->sum('total_amount'); // Tính tổng số tiền cho COD
+                ->sum('total_amount');
 
-            // Tổng cộng cả hai phương thức
             $totalAmount = $totalVNPay + $totalCOD;
 
-            // Định dạng số tiền cho từng phương thức
             $formattedVNPay = number_format($totalVNPay, 0) . ' VND';
             $formattedCOD = number_format($totalCOD, 0) . ' VND';
             $formattedTotal = number_format($totalAmount, 0) . ' VND';
 
             return response()->json([
-                'total_VNPay' => $formattedVNPay,  // Tổng tiền VNPay
-                'total_COD' => $formattedCOD,      // Tổng tiền COD
-                'total_amount' => $formattedTotal  // Tổng tiền của cả hai phương thức
+                'total_VNPay' => $formattedVNPay,
+                'total_COD' => $formattedCOD,
+                'total_amount' => $formattedTotal
             ], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Unable to fetch total payments: ' . $e->getMessage()], 500);
@@ -365,42 +339,34 @@ class OrderController extends Controller
     public function getCanceledOrders()
     {
         try {
-            // Lấy danh sách các đơn hàng có status là 'Canceled'
             $canceledOrders = Order::where('status', 'Canceled')->get();
 
-            // Kiểm tra nếu không có đơn hàng nào bị hủy
             if ($canceledOrders->isEmpty()) {
                 return response()->json(['message' => 'No canceled orders found.'], 200);
             }
 
-            // Trả về danh sách các đơn hàng bị hủy
             return response()->json([
                 'message' => 'Canceled orders retrieved successfully.',
                 'orders' => $canceledOrders
             ], 200);
 
         } catch (\Exception $e) {
-            // Xử lý lỗi nếu có
             return response()->json(['error' => 'Unable to retrieve canceled orders: ' . $e->getMessage()], 500);
         }
     }
 
     public function getOrderItems($order_id)
     {
-        // Tìm đơn hàng và lấy các item
         $order = Order::with('orderItems.product')->find($order_id);
 
-        // Kiểm tra xem đơn hàng có tồn tại không
         if (!$order) {
             return response()->json(['message' => 'Order not found.'], 404);
         }
 
-        // Kiểm tra xem có item nào không
         if ($order->orderItems->isEmpty()) {
             return response()->json(['message' => 'No order items found for this order.'], 404);
         }
 
-        // Lấy các mục đơn hàng
         $orderItems = $order->orderItems->map(function($item) {
             return [
                 'id' => $item->id,
@@ -416,7 +382,7 @@ class OrderController extends Controller
     }
     public function checkVnPayPaymentStatus($order_id)
     {
-        $status = 'Success'; // Hoặc 'Failed'
+        $status = 'Success';
 
         return $status;
     }
@@ -424,17 +390,14 @@ class OrderController extends Controller
     public function viewAllOrdersByUserId($userId)
     {
         try {
-            // Lấy tất cả đơn hàng của người dùng theo user_id
             $orders = Order::with('orderItems.product')
                 ->where('user_id', $userId)
                 ->get();
 
-            // Kiểm tra nếu không có đơn hàng nào
             if ($orders->isEmpty()) {
                 return response()->json(['message' => 'No orders found for this user'], 404);
             }
 
-            // Trả về thông tin đơn hàng
             return response()->json($orders->map(function ($order) {
                 return [
                     'order_id' => $order->order_id,
@@ -464,20 +427,14 @@ class OrderController extends Controller
     public function getOrderById($orderId)
     {
         try {
-            // Lấy đơn hàng theo order_id (nếu không tìm thấy sẽ trả về lỗi 404)
             $order = Order::with('orderItems.product', 'voucher', 'shipping')
                 ->where('order_id', $orderId)
-                ->firstOrFail(); // Throw 404 error if order not found
+                ->firstOrFail();
 
-            // Kiểm tra dữ liệu của voucher
-//            dd($order->voucher); // Dừng và kiểm tra dữ liệu của voucher
-            // Convert order_date to Carbon instance if it's not already
             $orderDate = Carbon::parse($order->order_date);
 
-            // Calculate expected delivery date (e.g., 5 days from order date)
             $expectedDeliveryDate = $orderDate->addDays(5)->format('Y-m-d');
 
-            // Trả về thông tin đơn hàng cùng với các sản phẩm trong giỏ hàng, voucher, và shipping
             return response()->json([
                 'order_id' => $order->order_id,
                 'order_date' => $orderDate->toIso8601String(),
@@ -489,12 +446,12 @@ class OrderController extends Controller
                     'code' => $order->voucher->code,
                     'discount_amount' => number_format($order->voucher->discount_amount, 2),
                     'status' => $order->voucher->status,
-                ] : null, // If voucher exists, include it
+                ] : null,
                 'shipping' => $order->shipping ? [
                     'name' => $order->shipping->name,
                     'shipping_amount' => number_format($order->shipping->shipping_amount, 2),
                     'method' => $order->shipping->method,
-                ] : null, // If shipping exists, include it
+                ] : null,
                 'cart_items' => $order->orderItems->map(function ($item) {
                     return [
                         'product_id' => $item->product->product_id ?? null,
@@ -506,13 +463,10 @@ class OrderController extends Controller
                 }),
             ]);
         } catch (ModelNotFoundException $e) {
-            // Nếu không tìm thấy đơn hàng
             return response()->json(['error' => 'Order not found'], 404);
         } catch (QueryException $e) {
-            // Lỗi cơ sở dữ liệu
             return response()->json(['error' => 'Database error: ' . $e->getMessage()], 500);
         } catch (Exception $e) {
-            // Lỗi không mong muốn
             return response()->json(['error' => 'Unexpected error: ' . $e->getMessage()], 500);
         }
     }

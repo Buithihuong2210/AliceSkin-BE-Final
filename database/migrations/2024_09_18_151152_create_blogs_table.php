@@ -14,15 +14,14 @@ class CreateBlogsTable extends Migration
     public function up()
     {
         Schema::create('blogs', function (Blueprint $table) {
-            $table->id('blog_id');  // Blog ID
-            $table->string('title');  // Title of the blog
-            $table->unsignedBigInteger('user_id');  // Foreign key for user
-            $table->text('content');  // Blog content
-            $table->string('thumbnail')->nullable();  // Image Logo
-            $table->enum('status', ['draft', 'published'])->default('draft');  // Status (draft/published)
-            $table->timestamps();  // Created at and updated at timestamps
+            $table->id('blog_id');
+            $table->string('title');
+            $table->unsignedBigInteger('user_id');
+            $table->text('content');
+            $table->string('thumbnail')->nullable();
+            $table->enum('status', ['draft', 'published'])->default('draft');
+            $table->timestamps();
 
-            // Foreign key constraint
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

@@ -12,10 +12,10 @@ return new class extends Migration
     public function up()
     {
         Schema::create('images', function (Blueprint $table) {
-            $table->id(); // Creates an auto-incrementing id column
-            $table->string('file_path'); // Stores the file path of the image
-            $table->string('file_name')->nullable(); // Stores the file name (optional)
-            $table->timestamps(); // Adds created_at and updated_at columns
+            $table->id();
+            $table->string('file_path');
+            $table->string('file_name')->nullable();
+            $table->timestamps();
         });
     }
 

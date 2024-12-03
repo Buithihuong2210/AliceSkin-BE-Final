@@ -12,14 +12,14 @@ return new class extends Migration
     public function up()
     {
         Schema::table('payments', function (Blueprint $table) {
-            $table->decimal('amount', 15, 2)->after('status'); // Thêm trường amount
+            $table->decimal('amount', 15, 2)->after('status');
         });
     }
 
     public function down()
     {
         Schema::table('payments', function (Blueprint $table) {
-            $table->dropColumn('amount'); // Xóa trường nếu cần
+            $table->dropColumn('amount');
         });
     }
 

@@ -64,17 +64,13 @@ class ResponseController extends Controller
     public function show($response_id)
     {
         try {
-            // Find the response by its ID
             $response = Response::findOrFail($response_id);
 
-            // Return the response data with a 200 status code
             return response()->json($response, 200);
 
         } catch (ModelNotFoundException $e) {
-            // Return a 404 error if the response is not found
             return response()->json(['error' => 'Response not found.'], 404);
         } catch (\Exception $e) {
-            // Return a 500 error for any other failure
             return response()->json(['error' => 'Failed to retrieve response.'], 500);
         }
     }
@@ -83,15 +79,12 @@ class ResponseController extends Controller
     public function index()
     {
         try {
-            // Retrieve all response records with related questions and surveys
             $responses = Response::with(['question', 'survey'])->get();
 
-            // Check if responses are empty
             if ($responses->isEmpty()) {
                 return response()->json(['error' => 'No responses found.'], 404);
             }
 
-            // Format the response to include question_text and survey title
             $formattedResponses = $responses->map(function ($response) {
                 return [
                     'response_id' => $response->response_id,
@@ -107,43 +100,35 @@ class ResponseController extends Controller
                 ];
             });
 
-            // Return the list of formatted responses with a 200 status code
             return response()->json($formattedResponses, 200);
 
         } catch (\Exception $e) {
-            // Log the exception message
             \Log::error('Failed to retrieve responses: ' . $e->getMessage());
 
-            // Return a 500 error if fetching responses fails
             return response()->json(['error' => 'Failed to retrieve responses.'], 500);
         }
     }
 
     public function showResponse()
     {
-        // Lấy user_id của người dùng đã đăng nhập
         $userId = auth()->id();
 
-        // Kiểm tra nếu người dùng đã đăng nhập
         if (!$userId) {
             return response()->json([
                 'message' => 'Unauthorized. Please log in.',
             ], 401);
         }
 
-        // Lấy tất cả các câu trả lời của người dùng này cùng với thông tin câu hỏi
-        $responses = Response::with('question:question_id,question_text,category,code') // Thay 'id' bằng 'question_id'
+        $responses = Response::with('question:question_id,question_text,category,code')
         ->where('user_id', $userId)
-            ->get(['response_id', 'user_id', 'question_id', 'answer_text']); // Thay 'id' bằng 'response_id' nếu cần
+            ->get(['response_id', 'user_id', 'question_id', 'answer_text']);
 
-        // Kiểm tra nếu không có câu trả lời nào
         if ($responses->isEmpty()) {
             return response()->json([
                 'message' => 'No responses found for this user.',
             ], 404);
         }
 
-        // Trả về kết quả dưới dạng JSON
         return response()->json($responses);
     }
 
@@ -185,23 +170,18 @@ class ResponseController extends Controller
     // Update a specific response by its ID
     public function update(Request $request, $survey_id)
     {
-        // Validate rằng 'responses' đã được cung cấp và là một mảng
         $validated = $request->validate([
             'responses' => 'required|array',
         ]);
 
         try {
-            // Kiểm tra xem khảo sát có tồn tại không
             $survey = Survey::findOrFail($survey_id);
 
-            // Lặp qua các phản hồi và cập nhật
             foreach ($validated['responses'] as $response) {
-                // Tìm câu hỏi dựa trên code thay vì question_id
                 $question = Question::where('code', $response['code'])
                     ->where('survey_id', $survey_id)
                     ->firstOrFail();
 
-                // Cập nhật hoặc tạo mới bản ghi phản hồi
                 Response::updateOrCreate(
                     [
                         'survey_id' => $survey_id,
@@ -214,18 +194,17 @@ class ResponseController extends Controller
                 );
             }
 
-            // Lọc sản phẩm dựa trên các câu trả lời
             $answers = array_column($validated['responses'], 'answer', 'code');
 
             $recommendedProducts = Product::query()
                 ->when(isset($answers['Q1']), function ($query) use ($answers) {
-                    return $query->where('target_skin_type', $answers['Q1']); // Lọc theo loại da
+                    return $query->where('target_skin_type', $answers['Q1']);
                 })
                 ->when(isset($answers['Q2']), function ($query) use ($answers) {
-                    return $query->where('product_type', $answers['Q2']); // Lọc theo loại sản phẩm
+                    return $query->where('product_type', $answers['Q2']);
                 })
                 ->when(isset($answers['Q6']), function ($query) use ($answers) {
-                    return $query->where('main_ingredient', $answers['Q6']); // Lọc theo thành phần chứa
+                    return $query->where('main_ingredient', $answers['Q6']);
                 })
                 ->get();
 
@@ -242,20 +221,15 @@ class ResponseController extends Controller
     public function destroy($response_id)
     {
         try {
-            // Find the response by its ID
             $response = Response::findOrFail($response_id);
 
-            // Delete the response from the database
             $response->delete();
 
-            // Return a success message with a 204 No Content status
             return response()->json(['message' => 'Response deleted successfully.'], 204);
 
         } catch (ModelNotFoundException $e) {
-            // Return a 404 error if the response is not found
             return response()->json(['error' => 'Response not found.'], 404);
         } catch (\Exception $e) {
-            // Return a 500 error for any other failure
             return response()->json(['error' => 'Failed to delete response.'], 500);
         }
     }
