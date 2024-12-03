@@ -9,9 +9,9 @@ class Payment extends Model
 {
     use HasFactory;
 
-    protected $table = 'payments'; // Specify the table name
+    protected $table = 'payments';
 
-    protected $primaryKey = 'payment_id'; // Specify the primary key
+    protected $primaryKey = 'payment_id';
 
     protected $fillable = [
         'order_id',
@@ -24,7 +24,6 @@ class Payment extends Model
         'amount'
     ];
 
-    // Define relationships
     public function order()
     {
         return $this->belongsTo(Order::class, 'order_id', 'order_id');

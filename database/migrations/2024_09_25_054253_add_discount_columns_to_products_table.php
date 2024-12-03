@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->decimal('discount', 5, 2)->nullable()->after('price'); // Thêm cột 'discount'
-            $table->decimal('discounted_price', 10, 2)->nullable()->after('discount'); // Thêm cột 'discounted_price'
+            $table->decimal('discount', 5, 2)->nullable()->after('price');
+            $table->decimal('discounted_price', 10, 2)->nullable()->after('discount');
         });
     }
 

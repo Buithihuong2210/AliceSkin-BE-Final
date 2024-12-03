@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
+        "google/cloud-storage": "^1.44",
         "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^10.0",
         "laravel/passport": "^12.3",

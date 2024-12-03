@@ -12,7 +12,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->text('images')->nullable(); // Thêm cột 'images' với kiểu dữ liệu text, cho phép null
+            $table->text('images')->nullable();
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->dropColumn('images'); // Xóa cột 'images' khi rollback
+            $table->dropColumn('images');
         });
     }
 };

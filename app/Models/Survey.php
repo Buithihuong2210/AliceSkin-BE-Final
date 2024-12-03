@@ -12,7 +12,6 @@ class Survey extends Model
     protected $table = 'surveys';
     protected $primaryKey = 'survey_id';
 
-    // Mass assignable attributes
     protected $fillable = [
         'title',
         'description',
@@ -20,7 +19,6 @@ class Survey extends Model
         'end_date'
     ];
 
-    // One-to-Many relationship with the Question table
     public function questions()
     {
         return $this->hasMany(Question::class, 'survey_id', 'survey_id');

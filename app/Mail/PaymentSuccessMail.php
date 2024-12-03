@@ -10,7 +10,7 @@ class PaymentSuccessMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $order; // Dữ liệu đơn hàng
+    public $order;
 
     /**
      * Tạo một instance mới.

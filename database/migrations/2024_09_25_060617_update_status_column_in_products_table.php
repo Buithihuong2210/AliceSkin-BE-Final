@@ -11,7 +11,6 @@ class UpdateStatusColumnInProductsTable extends Migration
     public function up()
     {
         Schema::table('products', function (Blueprint $table) {
-            // Change the status column to use enum for available and out of stock
             $table->enum('status', ['available', 'out of stock'])->default('available')->change();
         });
     }
@@ -22,7 +21,6 @@ class UpdateStatusColumnInProductsTable extends Migration
     public function down()
     {
         Schema::table('products', function (Blueprint $table) {
-            // Revert to original if necessary
             $table->string('status')->change();
         });
     }

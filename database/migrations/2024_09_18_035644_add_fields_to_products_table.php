@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('products', function (Blueprint $table) {
-            $table->string('short_description')->nullable()->after('description'); // Thêm cột 'short_description'
-            $table->decimal('volume', 8, 2)->nullable()->after('price'); // Thêm cột 'volume' (dung tích), số thập phân
-            $table->string('nature')->nullable()->after('volume'); // Thêm cột 'nature' (loại sản phẩm)
+            $table->string('short_description')->nullable()->after('description');
+            $table->decimal('volume', 8, 2)->nullable()->after('price');
+            $table->string('nature')->nullable()->after('volume');
         });
     }
 

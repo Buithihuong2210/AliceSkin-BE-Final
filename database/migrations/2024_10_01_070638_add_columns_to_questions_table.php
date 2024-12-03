@@ -12,15 +12,15 @@ return new class extends Migration
     public function up()
     {
         Schema::table('questions', function (Blueprint $table) {
-            $table->string('type')->after('question_text'); // Add type column
-            $table->json('options')->after('type'); // Add options column
+            $table->string('type')->after('question_text');
+            $table->json('options')->after('type');
         });
     }
 
     public function down()
     {
         Schema::table('questions', function (Blueprint $table) {
-            $table->dropColumn(['type', 'options']); // Remove added columns
+            $table->dropColumn(['type', 'options']);
         });
     }
 };

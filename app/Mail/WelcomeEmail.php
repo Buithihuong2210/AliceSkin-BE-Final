@@ -10,8 +10,7 @@ class WelcomeEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $user; // Nếu bạn muốn truyền dữ liệu vào email
-
+    public $user;
     /**
      * Tạo constructor để truyền dữ liệu.
      */
@@ -25,7 +24,7 @@ class WelcomeEmail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Welcome to Alice Skin') // Tiêu đề email
+        return $this->subject('Welcome to Alice Skin')
         ->view('emails.welcome'); // Tên view blade để render email
     }
 }

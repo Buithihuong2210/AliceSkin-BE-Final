@@ -14,7 +14,6 @@ class Response extends Model
 
     protected $fillable = ['survey_id', 'question_id', 'user_id', 'answer_text'];
 
-    // Many-to-One relationship with the Question table
     public function question()
     {
         return $this->belongsTo(Question::class, 'question_id', 'question_id');

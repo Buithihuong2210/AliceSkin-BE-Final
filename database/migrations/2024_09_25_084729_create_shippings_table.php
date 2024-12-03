@@ -9,7 +9,7 @@ class CreateShippingsTable extends Migration
     {
         Schema::create('shippings', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique(); // Ensure name is unique
+            $table->string('name')->unique();
             $table->decimal('shipping_amount', 8, 2);
             $table->timestamps();
         });

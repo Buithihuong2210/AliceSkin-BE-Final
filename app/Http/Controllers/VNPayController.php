@@ -96,13 +96,13 @@ class VNPayController extends Controller
         }
         if ($responseCode === '00') {
             DB::table('orders')->where('order_id', $orderId)->update([
-                'status' => 'Waiting for Delivery', // Waiting for delivery
-                'payment_status' => 'Paid', // Paid
-                'updated_at' => now(), // Update time
+                'status' => 'Waiting for Delivery',
+                'payment_status' => 'Paid',
+                'updated_at' => now(),
             ]);
 
             DB::table('payments')->insert([
-                'order_id' => $orderId, // The order ID
+                'order_id' => $orderId,
                 'transaction_no' => $transactionNo,
                 'bank_code' => $request->input('vnp_BankCode'),
                 'card_type' => $request->input('vnp_CardType'),
@@ -160,34 +160,25 @@ class VNPayController extends Controller
 
     public function generateSecureHash($params)
     {
-        // Chọn ra các tham số không bao gồm vnp_SecureHash
         $secureHashParams = array_filter($params, function($key) {
             return $key !== 'vnp_SecureHash';
         }, ARRAY_FILTER_USE_KEY);
 
-        // Sắp xếp các tham số theo thứ tự alphabet
         ksort($secureHashParams);
 
-        // Kết nối các tham số theo dạng query string
         $queryString = http_build_query($secureHashParams);
 
-        // Lấy khóa bí mật từ ENV hoặc cấu hình
-        $secureHashSecret = env('VNPAY_SECRET_KEY');  // Cần có vnpay_secret_key trong file .env
+        $secureHashSecret = env('VNPAY_SECRET_KEY');
 
-        // Nối khóa bí mật vào cuối chuỗi query
         $secureString = $queryString . '&' . 'vnp_SecureHashSecret=' . $secureHashSecret;
 
-        // Tính toán hash SHA256 từ chuỗi và trả về
         return strtoupper(hash('sha256', $secureString));
     }
 
     public function getAllPayments()
     {
         try {
-            // Giả sử bạn có một bảng 'payments' lưu trữ tất cả các giao dịch thanh toán
-            // Lấy tất cả thông tin từ bảng payments
             $payments = Payment::all();
-            // Trả về danh sách các payment dưới dạng JSON
             return response()->json(['payments' => $payments], 200);
         } catch (\Exception $e) {
             // Trả về lỗi nếu có sự cố xảy ra
@@ -198,12 +189,12 @@ class VNPayController extends Controller
     public function getTotalPayments()
     {
         try {
-            // Tính tổng số tiền đã thanh toán từ bảng payments
             $totalAmount = DB::table('payments')->sum('amount');
 
             $formattedAmount = number_format($totalAmount, 0) . ' VND';
 
-            return response()->json(['total_amount' => $formattedAmount], 200);        } catch (\Exception $e) {
+            return response()->json(['total_amount' => $formattedAmount], 200);
+        } catch (\Exception $e) {
             return response()->json(['error' => 'Unable to fetch total payments: ' . $e->getMessage()], 500);
         }
     }

@@ -13,7 +13,7 @@ class BrandController extends Controller
     // List all brands
     public function index()
     {
-        $brands = Brand::all();  // Dữ liệu sẽ có thêm trường total_products
+        $brands = Brand::all();
         return response()->json($brands, 200);
     }
 
@@ -41,15 +41,12 @@ class BrandController extends Controller
     // Show a specific brand
     public function show($id)
     {
-        // Find the brand by its ID
         $brand = Brand::with('products')->find($id);
 
-        // Check if the brand exists
         if (is_null($brand)) {
             return response()->json(['message' => 'Nhãn hiệu không tìm thấy'], 404);
         }
 
-        // Prepare the brand data in the required format
         $brandData = [
                 'brand_id' => $brand->brand_id,
                 'name' => $brand->name,
@@ -119,16 +116,18 @@ class BrandController extends Controller
     // Delete a specific brand
     public function destroy($id)
     {
-        $brand = Brand::find($id);
+        $brand = Brand::with('products')->find($id);
 
         if (is_null($brand)) {
             return response()->json(['message' => 'Brand not found'], 404);
         }
 
-        try {
-            // Optionally, you could delete all products related to this brand
-            // Product::where('brand_id', $id)->delete();
+        // Kiểm tra nếu thương hiệu có sản phẩm
+        if ($brand->products->count() > 0) {
+            return response()->json(['message' => 'Cannot delete brand with associated products'], 400);
+        }
 
+        try {
             $brand->delete();
             return response()->json(['message' => "Brand {$id} deleted successfully"], 200);
 
@@ -137,16 +136,15 @@ class BrandController extends Controller
         }
     }
 
+
     public function getProductsByBrand($brandId)
     {
-        // Tìm nhãn hiệu theo brand_id
         $brand = Brand::find($brandId);
 
         if (is_null($brand)) {
             return response()->json(['message' => 'Nhãn hiệu không tìm thấy'], 404);
         }
 
-        // Trả về tất cả các sản phẩm liên quan đến nhãn hiệu này
         $products = $brand->products;
 
         return response()->json($products, 200);

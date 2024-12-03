@@ -15,7 +15,6 @@ class ProductController extends Controller
     public function index()
     {
         try {
-            // Retrieve all products with their associated brands
             $products = Product::with('brand')->get();
 
             $products = $products->map(function ($product) {
@@ -28,13 +27,13 @@ class ProductController extends Controller
                     'discounted_price' => $product->discounted_price,
                     'quantity' => $product->quantity,
                     'brand_id' => $product->brand_id,
-                    'image' => $product->image, // Return single image
+                    'image' => $product->image,
                     'status' => $product->status,
                     'volume' => $product->volume,
                     'nature' => $product->nature,
-                    'product_type' => $product->product_type, // New field
-                    'main_ingredient' => $product->main_ingredient, // New field
-                    'target_skin_type' => $product->target_skin_type, // New field
+                    'product_type' => $product->product_type,
+                    'main_ingredient' => $product->main_ingredient,
+                    'target_skin_type' => $product->target_skin_type,
                     'rating' => $product->rating,
                     'created_at' => $product->created_at,
                     'updated_at' => $product->updated_at,
@@ -58,20 +57,17 @@ class ProductController extends Controller
                 'discount' => 'nullable|numeric|min:0|max:100',
                 'quantity' => 'nullable|numeric|min:0|max:500',
                 'brand_id' => 'required|exists:brands,brand_id',
-                'image' => 'required|url|ends_with:.jpg,.jpeg,.png,.gif,.svg', // Changed to single image
+                'image' => 'required|url|ends_with:.jpg,.jpeg,.png,.gif,.svg',
                 'volume' => 'nullable|numeric',
                 'nature' => 'nullable|string|in:new,best seller,exclusive',
-                'product_type' => 'nullable|string|in:Cleanser,Toner,Serum,Moisturizer,Sunscreen,Face Mask,Exfoliator,Treatment Cream,Facial Oil,Eye Cream', // Fixed values for product_type
-                'main_ingredient' => 'nullable|string|in:Hyaluronic Acid,Vitamin C,Retinol,Salicylic Acid (BHA),Glycolic Acid (AHA),Niacinamide,Ceramides,Peptides,Tea Tree Oil,Aloe Vera', // Fixed values for main_ingredient
-                'target_skin_type' => 'nullable|string|in:Oily Skin,Dry Skin,Combination Skin,Sensitive Skin,Acne-Prone Skin,Mature Skin,Normal Skin,Dull Skin', // Fixed values for target_skin_type
+                'product_type' => 'nullable|string|in:Cleanser,Toner,Serum,Moisturizer,Sunscreen,Face Mask,Exfoliator,Treatment Cream,Facial Oil,Eye Cream',
+                'main_ingredient' => 'nullable|string|in:Hyaluronic Acid,Vitamin C,Retinol,Salicylic Acid (BHA),Glycolic Acid (AHA),Niacinamide,Ceramides,Peptides,Tea Tree Oil,Aloe Vera',
+                'target_skin_type' => 'nullable|string|in:Oily Skin,Dry Skin,Combination Skin,Sensitive Skin,Acne-Prone Skin,Mature Skin,Normal Skin,Dull Skin',
             ]);
 
             $product_data = $request->all();
             $product_data['status'] = 'available';
-            $product_data['images'] = $request->input('image'); // Assign single image
-
-            // Chỉ lưu mảng images mà không cần json_encode
-            // Trường images sẽ được tự động xử lý thành JSON nếu bạn đã khai báo trong $casts
+            $product_data['images'] = $request->input('image');
 
             $discount = $request->input('discount', 0);
             $product_data['discounted_price'] = $discount > 0 && $discount < 100
@@ -109,10 +105,10 @@ class ProductController extends Controller
                 'status' => $product->status,
                 'volume' => $product->volume,
                 'nature' => $product->nature,
-                'rating' => $product->rating, // Add the rating
-                'product_type' => $product->product_type, // New field
-                'main_ingredient' => $product->main_ingredient, // New field
-                'target_skin_type' => $product->target_skin_type, // New field
+                'rating' => $product->rating,
+                'product_type' => $product->product_type,
+                'main_ingredient' => $product->main_ingredient,
+                'target_skin_type' => $product->target_skin_type,
                 'created_at' => $product->created_at,
                 'updated_at' => $product->updated_at,
                 'brand' => $product->brand
@@ -139,33 +135,28 @@ class ProductController extends Controller
                 'image' => 'sometimes|nullable|url|ends_with:.jpg,.jpeg,.png,.gif,.svg',
                 'volume' => 'nullable|numeric',
                 'nature' => 'nullable|string|in:new,best seller,exclusive',
-                'product_type' => 'nullable|string|in:Cleanser,Toner,Serum,Moisturizer,Sunscreen,Face Mask,Exfoliator,Treatment Cream,Facial Oil,Eye Cream', // Fixed values for product_type
-                'main_ingredient' => 'nullable|string|in:Hyaluronic Acid,Vitamin C,Retinol,Salicylic Acid (BHA),Glycolic Acid (AHA),Niacinamide,Ceramides,Peptides,Tea Tree Oil,Aloe Vera', // Fixed values for main_ingredient
-                'target_skin_type' => 'nullable|string|in:Oily Skin,Dry Skin,Combination Skin,Sensitive Skin,Acne-Prone Skin,Mature Skin,Normal Skin,Dull Skin', // Fixed values for target_skin_type
+                'product_type' => 'nullable|string|in:Cleanser,Toner,Serum,Moisturizer,Sunscreen,Face Mask,Exfoliator,Treatment Cream,Facial Oil,Eye Cream',
+                'main_ingredient' => 'nullable|string|in:Hyaluronic Acid,Vitamin C,Retinol,Salicylic Acid (BHA),Glycolic Acid (AHA),Niacinamide,Ceramides,Peptides,Tea Tree Oil,Aloe Vera',
+                'target_skin_type' => 'nullable|string|in:Oily Skin,Dry Skin,Combination Skin,Sensitive Skin,Acne-Prone Skin,Mature Skin,Normal Skin,Dull Skin',
             ]);
 
             $product_data = $request->all();
 
-            // Handle image update
             if ($request->has('image')) {
-                $product_data['image'] = $request->input('image'); // Sử dụng 'image' thay vì 'images'
+                $product_data['image'] = $request->input('image');
             }
 
-            // Calculate discounted price
             $discount = $request->input('discount', 0);
             $product_data['discounted_price'] = $discount > 0 && $discount < 100
                 ? round($product_data['price'] * (1 - $discount / 100), 2)
                 : round($product_data['price'], 2);
 
-            // Set status to 'available' if not specified
             if (!$request->has('status')) {
                 $product_data['status'] = 'available';
             }
 
-            // Update the product
             $product->update($product_data);
 
-            // Prepare the response
             return response()->json([
                 'product_id' => $product->product_id,
                 'name' => $product->name,
@@ -175,14 +166,14 @@ class ProductController extends Controller
                 'discounted_price' => $product->discounted_price,
                 'quantity' => $product->quantity,
                 'brand_id' => $product->brand_id,
-                'image' => $product->image, // Return single image
+                'image' => $product->image,
                 'status' => $product->status,
                 'volume' => $product->volume,
                 'nature' => $product->nature,
                 'rating' => $product->rating,
-                'product_type' => $product->product_type, // New field
-                'main_ingredient' => $product->main_ingredient, // New field
-                'target_skin_type' => $product->target_skin_type, // New field
+                'product_type' => $product->product_type,
+                'main_ingredient' => $product->main_ingredient,
+                'target_skin_type' => $product->target_skin_type,
                 'created_at' => $product->created_at,
                 'updated_at' => $product->updated_at,
                 'brand' => $product->brand
@@ -237,16 +228,13 @@ class ProductController extends Controller
     public function getReviewsByProduct($product_id)
     {
         try {
-            // Check if the product exists
             $product = Product::find($product_id);
             if (!$product) {
                 return response()->json(['message' => 'Product not found'], 404);
             }
 
-            // Get all reviews for the specified product
             $reviews = Review::with(['user'])->where('product_id', $product_id)->get();
 
-            // Calculate the average rating
             $averageRating = $reviews->avg('rate');
 
             return response()->json([

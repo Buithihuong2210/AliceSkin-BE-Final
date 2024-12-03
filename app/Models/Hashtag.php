@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Hashtag extends Model
 {
     use HasFactory;
-    protected $primaryKey = 'id'; // Custom primary key
+    protected $primaryKey = 'id';
 
     protected $fillable = ['name', 'usage_count'];
 

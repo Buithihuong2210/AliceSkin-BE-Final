@@ -11,11 +11,11 @@ class RolePermissionSeeder extends Seeder
     {
         // Tạo các quyền
         $permissions = [
-            'manage_surveys', // Quản lý khảo sát
-            'manage_questions', // Quản lý câu hỏi
-            'view_responses', // Xem câu trả lời
-            'manage_blogs', // Quản lý blog
-            'confirm_delivery' // Xác nhận đơn hàng
+            'manage_surveys',
+            'manage_questions',
+            'view_responses',
+            'manage_blogs',
+            'confirm_delivery'
         ];
 
         foreach ($permissions as $permission) {
@@ -24,13 +24,13 @@ class RolePermissionSeeder extends Seeder
 
         // Tạo role admin
         $admin = Role::firstOrCreate(['name' => 'admin']);
-        $admin->givePermissionTo(Permission::all()); // Admin có tất cả quyền
+        $admin->givePermissionTo(Permission::all());
 
         // Tạo role staff
         $staff = Role::firstOrCreate(['name' => 'staff']);
         $staff->givePermissionTo([
             'manage_questions',
             'view_responses',
-        ]); // Staff chỉ có một số quyền
+        ]);
     }
 }

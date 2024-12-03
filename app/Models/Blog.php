@@ -10,7 +10,7 @@ class Blog extends Model
     use HasFactory;
 
     protected $table = 'blogs';
-    protected $primaryKey = 'blog_id'; // Define primary key
+    protected $primaryKey = 'blog_id';
 
     protected $fillable = [
         'title',
@@ -21,7 +21,6 @@ class Blog extends Model
         'like'
     ];
 
-    // Define the relationship to the User model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');
