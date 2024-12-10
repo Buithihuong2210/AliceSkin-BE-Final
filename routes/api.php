@@ -308,35 +308,34 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('manager')->group(func
 
 //// Routes cho staff
 Route::middleware(['auth:sanctum', 'role:staff'])->prefix('manager')->group(function () {
-    Route::prefix('surveys')->group(function () {
-        Route::post('/', [SurveyController::class, 'store']); // Create a new survey
-        Route::get('/', [SurveyController::class, 'index']); // List all surveys
-        Route::get('/{survey_id}', [SurveyController::class, 'show']); // Show a specific survey
-        Route::put('/{survey_id}', [SurveyController::class, 'update']); // Update a specific survey
-    });
-
-    // Question management routes
-    Route::prefix('surveys/{survey_id}/questions')->group(function () {
-        Route::post('/', [QuestionController::class, 'store']);
-        Route::get('/', [QuestionController::class, 'index']);
-        Route::get('/{question_id}', [QuestionController::class, 'show']);
-        Route::put('/{question_id}', [QuestionController::class, 'update']);
-    });
-
-    // Response management routes ()
-    Route::prefix('responses')->group(function () {
-        Route::get('/', [ResponseController::class, 'index']);
-        Route::get('/{response_id}', [ResponseController::class, 'show']);
-    });
-
-    Route::prefix('blogs')->group(function () {
-        Route::post('/', [BlogController::class, 'store']);
-        Route::put('/{blog_id}', [BlogController::class, 'updateAdmin']);
-        Route::put('/changestatus/{blog_id}', [BlogController::class, 'changeStatus']);
-        Route::get('/{blog}', [BlogController::class, 'show']);
-    });
-
-    Route::post('/orders/confirm-delivery/{order_id}', [OrderController::class, 'confirmDelivery']);
+//    Route::prefix('surveys')->group(function () {
+//        Route::post('/', [SurveyController::class, 'store']);
+//        Route::get('/', [SurveyController::class, 'index']);
+//        Route::get('/{survey_id}', [SurveyController::class, 'show']);
+//        Route::put('/{survey_id}', [SurveyController::class, 'update']);
+//    });
+//
+//    // Question management routes
+//    Route::prefix('surveys/{survey_id}/questions')->group(function () {
+//        Route::post('/', [QuestionController::class, 'store']);
+//        Route::get('/', [QuestionController::class, 'index']);
+//        Route::get('/{question_id}', [QuestionController::class, 'show']);
+//        Route::put('/{question_id}', [QuestionController::class, 'update']);
+//    });
+//
+//    // Response management routes ()
+//    Route::prefix('responses')->group(function () {
+//        Route::get('/', [ResponseController::class, 'index']);
+//        Route::get('/{response_id}', [ResponseController::class, 'show']);
+//    });
+//
+//    Route::prefix('blogs')->group(function () {
+//        Route::put('/{blog_id}', [BlogController::class, 'updateAdmin']);
+//        Route::put('/changestatus/{blog_id}', [BlogController::class, 'changeStatus']);
+//        Route::get('/{blog}', [BlogController::class, 'show']);
+//    });
+//
+//    Route::post('/orders/confirm-delivery/{order_id}', [OrderController::class, 'confirmDelivery']);
 
 });
 
