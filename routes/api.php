@@ -307,7 +307,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('manager')->group(func
 });
 
 //// Routes cho staff
-Route::middleware(['auth:sanctum', 'role:staff'])->prefix('manager')->group(function () {
+//Route::middleware(['auth:sanctum', 'role:staff'])->prefix('manager')->group(function () {
 //    Route::prefix('surveys')->group(function () {
 //        Route::post('/', [SurveyController::class, 'store']);
 //        Route::get('/', [SurveyController::class, 'index']);
@@ -337,5 +337,5 @@ Route::middleware(['auth:sanctum', 'role:staff'])->prefix('manager')->group(func
 //
 //    Route::post('/orders/confirm-delivery/{order_id}', [OrderController::class, 'confirmDelivery']);
 
-});
+//});
 
