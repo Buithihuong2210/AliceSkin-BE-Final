@@ -17,6 +17,7 @@ class BlogController extends Controller
     public function showAll()
     {
         try {
+
             $blogs = Blog::with(['hashtags', 'user'])->get();
 
             $publishedCount = Blog::where('status', 'published')->count();
@@ -61,6 +62,7 @@ class BlogController extends Controller
             ], 500);
         }
     }
+
     // Create a new blog
     public function store(Request $request)
     {
@@ -88,7 +90,7 @@ class BlogController extends Controller
                 'content' => $validatedData['content'],
                 'status' => $isAdmin ? $validatedData['status'] : 'draft',
                 'thumbnail' => $validatedData['thumbnail'] ?? '',
-                'like' => 0 // Initialize likes to 0
+                'like' => 0
               
             ]);
 
@@ -180,6 +182,7 @@ class BlogController extends Controller
             ], 404);
         }
     }
+
     public function showUserBlogs(Request $request)
     {
         try {

@@ -16,7 +16,7 @@ class ReviewController extends Controller
         $request->validate([
             'product_reviews' => 'required|array',
             'product_reviews.*.content' => 'required|string',
-            'product_reviews.*.rate' => 'required|integer|between:1,5',
+            'product_reviews.*.rate' => 'required|integer|between:1.5',
         ]);
 
         $user_id = Auth::id();
@@ -32,28 +32,37 @@ class ReviewController extends Controller
 
         $orderItems = $order->orderItems;
 
-        if (count($orderItems) !== count($request->product_reviews)) {
-            return response()->json(['message' => 'Number of reviews does not match the number of products in the order.'], 400);
-        }
-
-        $existingReviews = Review::where('order_id', $order_id)->where('user_id', $user_id)->count();
-
-        if ($existingReviews > 0) {
-            return response()->json(['message' => 'You have already reviewed this order.'], 403);
+        if (count($request->product_reviews) > count($orderItems)) {
+            return response()->json(['message' => 'Too many reviews provided compared to order items.'], 400);
         }
 
         foreach ($request->product_reviews as $index => $reviewData) {
-            $orderItem = $orderItems[$index];
 
+            if (!isset($orderItems[$index])) {
+                continue;
+            }
+
+            $product_id = $orderItems[$index]->product_id;
+
+            $existingReview = Review::where('order_id', $order_id)
+                ->where('user_id', $user_id)
+                ->where('product_id', $product_id)
+                ->first();
+
+            if ($existingReview) {
+                return response()->json(['message' => 'You have already reviewed this product.'], 403);
+            }
+
+            // Create new review
             try {
                 Review::create([
                     'content' => $reviewData['content'],
                     'rate' => $reviewData['rate'],
                     'user_id' => $user_id,
-                    'product_id' => $orderItem->product_id,
+                    'product_id' => $product_id,
                     'order_id' => $order_id,
                 ]);
-                $this->updateProductRating($orderItem->product_id);
+                $this->updateProductRating($product_id);
 
             } catch (\Exception $e) {
                 return response()->json(['message' => 'Failed to create review: ' . $e->getMessage()], 500);
