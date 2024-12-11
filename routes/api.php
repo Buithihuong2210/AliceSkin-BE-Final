@@ -306,6 +306,11 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('manager')->group(func
 
 });
 
+
+
+
+
+
 //// Routes cho staff
 //Route::middleware(['auth:sanctum', 'role:staff'])->prefix('manager')->group(function () {
 //    Route::prefix('surveys')->group(function () {
@@ -339,3 +344,18 @@ Route::middleware(['auth:sanctum', 'role:admin'])->prefix('manager')->group(func
 
 //});
 
+
+//Route::middleware(['auth:sanctum'])->prefix('manager')->group(function () {
+//    Route::prefix('blogs')->middleware('role:admin')->group(function () {
+//        Route::post('/', [BlogController::class, 'store']);
+//        Route::put('/{blog_id}', [BlogController::class, 'updateAdmin']);
+//        Route::put('/changestatus/{blog_id}', [BlogController::class, 'changeStatus']);
+//        Route::get('/{blog}', [BlogController::class, 'show']);
+//    });
+//
+//    Route::prefix('staff/blogs')->middleware('role:staff')->group(function () {
+//        Route::put('/{blog_id}', [BlogController::class, 'updateAdmin']);
+//        Route::put('/changestatus/{blog_id}', [BlogController::class, 'changeStatus']);
+//        Route::get('/{blog}', [BlogController::class, 'show']);
+//    });
+//});

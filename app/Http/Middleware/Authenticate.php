@@ -15,6 +15,4 @@ class Authenticate extends Middleware
         return 'not_login';
     }
 
-
-
 }

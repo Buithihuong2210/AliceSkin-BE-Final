@@ -36,7 +36,7 @@ class VNPayController extends Controller
             if ($paymentMethod === 'VNpay Payment') {
                 $amount = $order->total_amount * 100;
                 $minAmount = 10000;
-                $maxAmount = 50000000;
+                $maxAmount = 200000000;
 
                 if ($amount < $minAmount || $amount > $maxAmount) {
                     return response()->json(['error' => 'Invalid transaction amount. Valid amount must be between '
