@@ -16,7 +16,7 @@ class ReviewController extends Controller
         $request->validate([
             'product_reviews' => 'required|array',
             'product_reviews.*.content' => 'required|string',
-            'product_reviews.*.rate' => 'required|integer|between:1.5',
+            'product_reviews.*.rate' => 'required|integer|between:1,5',
         ]);
 
         $user_id = Auth::id();
