@@ -39,7 +39,6 @@ class SocialAuthController extends Controller
             return redirect()->to('http://localhost:3000/home?tk=' . $tk);
 
         } catch (\Exception $e) {
-            dd($e);
             Log::error('Error occurred: ' . $e->getMessage());
             return redirect('/login')->withErrors(['error' => 'Failed to login using Facebook.']);
         }

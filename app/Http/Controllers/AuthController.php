@@ -29,7 +29,7 @@ class AuthController extends Controller
             ], 400);
         }
 
-        // Create the user
+        // Create user
         $user = User::create([
             'name' => $validatedData['name'],
             'email' => $validatedData['email'],
@@ -40,7 +40,6 @@ class AuthController extends Controller
             'address' => $validatedData['address'],
         ]);
 
-        // Send welcome email to the user
         Mail::to($user->email)->send(new WelcomeEmail($user));
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -79,7 +78,7 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
             'id' => $user->id,
-            'role' => $user->role, // Lấy thêm role của user
+            'role' => $user->role,
         ]);
     }
 
